@@ -26,7 +26,7 @@ public class FirestoreChangePublisherTest {
 
     @Test
     public void test() {
-        FirestoreChangePublisher publisher = new FirestoreChangePublisher();
+        FirestoreChangePublisher publisher = new FirestoreChangePublisher(null, null);
         assertNotNull(publisher);
     }
 }
