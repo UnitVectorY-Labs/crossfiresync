@@ -1,0 +1,9 @@
+{
+    "input": {
+        "value": "projects/exampleproject/databases/exampledatabase/documents/testcollection/testdocument"
+    },
+    "context": "newdatabase",
+    "output": {
+        "value": "projects/exampleproject/databases/newdatabase/documents/testcollection/testdocument"
+    }
+}

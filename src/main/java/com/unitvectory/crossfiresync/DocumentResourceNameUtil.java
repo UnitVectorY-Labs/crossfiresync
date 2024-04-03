@@ -23,8 +23,15 @@ import java.util.regex.Pattern;
  */
 public class DocumentResourceNameUtil {
 
-    // Compile the Pattern once; Pattern is thread-safe
+    /**
+     * The pattern to extract the document path
+     */
     private static final Pattern DOCUMENT_PATH_PATTERN = Pattern.compile("projects/.*/databases/.*/documents/(.+)");
+
+    /**
+     * The pattern to replace the database id
+     */
+    private static final Pattern DATABASE_ID_PATTERN = Pattern.compile("(projects/.*/databases/)(.*?)(/documents/.+)");
 
     /**
      * Extracts the document_path from the resource name using a Matcher.
@@ -48,5 +55,29 @@ public class DocumentResourceNameUtil {
 
         // No match found, return null or throw an exception
         return null;
+    }
+
+    /**
+     * Replaces the database segment in the resource name with a new database name.
+     * 
+     * The resource name in the format of
+     * `projects/{project_id}/databases/{database_id}/documents/{document_path}`
+     * will have the `{database_id}` replaced.
+     *
+     * @param resourceName    the original resource name
+     * @param newDatabaseName the new database name to replace the old one
+     * @return the resource name with the database segment replaced
+     */
+    public static String setDatabaseId(String resourceName, String newDatabaseName) {
+        // Regex to find the database segment
+        Matcher matcher = DATABASE_ID_PATTERN.matcher(resourceName);
+
+        if (matcher.find()) {
+            // Reconstruct the resourceName with the new database name
+            return matcher.group(1) + newDatabaseName + matcher.group(3);
+        }
+
+        // If no match found, return the original resourceName or throw an exception
+        return resourceName;
     }
 }

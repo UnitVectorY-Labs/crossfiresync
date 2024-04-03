@@ -19,24 +19,24 @@ import com.unitvectory.fileparamunit.ListFileSource;
 import com.unitvectory.jsonparamunit.JsonClassParamUnit;
 
 /**
- * The DocumentResourceNameUtil utility class test for getDocumentPath.
+ * The DocumentResourceNameUtil utility class test for setDatabase.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public class DocumentResourceNameUtilDocumentPathTest extends JsonClassParamUnit<TestRecord, TestRecord> {
+public class DocumentResourceNameUtilSetDatabaseTest extends JsonClassParamUnit<TestRecord, TestRecord> {
 
-    protected DocumentResourceNameUtilDocumentPathTest() {
+    protected DocumentResourceNameUtilSetDatabaseTest() {
         super(TestRecord.class);
     }
 
     @ParameterizedTest
-    @ListFileSource(resources = "/documentPath/", fileExtension = ".json", recurse = false)
+    @ListFileSource(resources = "/databaseId/", fileExtension = ".json", recurse = false)
     public void testIt(String file) {
         run(file);
     }
 
     @Override
     protected TestRecord process(TestRecord input, String context) {
-        return TestRecord.builder().value(DocumentResourceNameUtil.getDocumentPath(input.getValue())).build();
+        return TestRecord.builder().value(DocumentResourceNameUtil.setDatabaseId(input.getValue(), context)).build();
     }
 }
