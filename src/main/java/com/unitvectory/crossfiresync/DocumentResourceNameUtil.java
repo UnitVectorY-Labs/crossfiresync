@@ -29,7 +29,7 @@ public class DocumentResourceNameUtil {
     private static final Pattern DOCUMENT_PATH_PATTERN = Pattern.compile("projects/.*/databases/.*/documents/(.+)");
 
     /**
-     * The pattern to replace the database id
+     * The pattern for the database id
      */
     private static final Pattern DATABASE_ID_PATTERN = Pattern.compile("(projects/.*/databases/)(.*?)(/documents/.+)");
 
@@ -79,5 +79,27 @@ public class DocumentResourceNameUtil {
 
         // If no match found, return the original resourceName or throw an exception
         return resourceName;
+    }
+
+    /**
+     * Extracts the database_id from the resource name.
+     *
+     * The resource name in the format of
+     * `projects/{project_id}/databases/{database_id}/documents/{document_path}`
+     * will have just the `{database_id}` returned.
+     *
+     * @param resourceName the resource name
+     * @return the database id, or null if not found
+     */
+    public static String getDatabaseId(String resourceName) {
+        Matcher matcher = DATABASE_ID_PATTERN.matcher(resourceName);
+
+        if (matcher.find()) {
+            // Return the captured group which is the database id
+            return matcher.group(2);
+        }
+
+        // No database id found, return null or throw an exception
+        return null;
     }
 }
