@@ -1,0 +1,8 @@
+{
+    "input": {
+        "value": "projects/exampleproject/databases/exampledatabase/documents/testcollection/testdocument"
+    },
+    "output": {
+        "value": "testcollection/testdocument"
+    }
+}
