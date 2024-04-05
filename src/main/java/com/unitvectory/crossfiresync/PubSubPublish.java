@@ -13,20 +13,19 @@
  */
 package com.unitvectory.crossfiresync;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import org.junit.jupiter.api.Test;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * FirestoreChangePublisherTest
+ * The PubSubPublish class.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public class FirestoreChangePublisherTest {
+@Data
+@NoArgsConstructor
+class PubSubPublish {
 
-    @Test
-    public void test() {
-        FirestoreChangePublisher publisher = new FirestoreChangePublisher( "", "");
-        assertNotNull(publisher);
-    }
+    private PubSubMessage message;
+    
+    private String subscription;
 }

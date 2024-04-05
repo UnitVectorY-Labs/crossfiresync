@@ -16,12 +16,15 @@ package com.unitvectory.crossfiresync;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * The DocumentResourceNameUtil utility class.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public class DocumentResourceNameUtil {
+@UtilityClass
+class DocumentResourceNameUtil {
 
     /**
      * The pattern to extract the document path
@@ -55,30 +58,6 @@ public class DocumentResourceNameUtil {
 
         // No match found, return null or throw an exception
         return null;
-    }
-
-    /**
-     * Replaces the database segment in the resource name with a new database name.
-     * 
-     * The resource name in the format of
-     * `projects/{project_id}/databases/{database_id}/documents/{document_path}`
-     * will have the `{database_id}` replaced.
-     *
-     * @param resourceName    the original resource name
-     * @param newDatabaseName the new database name to replace the old one
-     * @return the resource name with the database segment replaced
-     */
-    public static String setDatabaseId(String resourceName, String newDatabaseName) {
-        // Regex to find the database segment
-        Matcher matcher = DATABASE_ID_PATTERN.matcher(resourceName);
-
-        if (matcher.find()) {
-            // Reconstruct the resourceName with the new database name
-            return matcher.group(1) + newDatabaseName + matcher.group(3);
-        }
-
-        // If no match found, return the original resourceName or throw an exception
-        return resourceName;
     }
 
     /**
