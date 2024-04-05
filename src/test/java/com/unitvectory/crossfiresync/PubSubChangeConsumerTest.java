@@ -16,6 +16,9 @@ package com.unitvectory.crossfiresync;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import com.google.cloud.firestore.Firestore;
 
 /**
  * PubSubChangeConsumerTest
@@ -26,7 +29,8 @@ public class PubSubChangeConsumerTest {
 
     @Test
     public void test() {
-        PubSubChangeConsumer consumer = new PubSubChangeConsumer();
+        Firestore db = Mockito.mock(Firestore.class);
+        PubSubChangeConsumer consumer = new PubSubChangeConsumer(db, "test");
         assertNotNull(consumer);
     }
 }

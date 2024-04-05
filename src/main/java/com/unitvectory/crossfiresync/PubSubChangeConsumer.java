@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.cloudevents.CloudEvent;
+import lombok.NonNull;
 
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +40,7 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
 
     private static final Logger logger = Logger.getLogger(PubSubChangeConsumer.class.getName());
 
-    private static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
     private final String database;
 
@@ -49,11 +50,16 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
         this(System.getenv("DATABASE"));
     }
 
-    public PubSubChangeConsumer(String database) {
+    public PubSubChangeConsumer(@NonNull String database) {
         this.database = database;
         this.db = FirestoreOptions.newBuilder()
-                .setDatabaseId(this.database)
+                .setDatabaseId(database)
                 .build().getService();
+    }
+
+    public PubSubChangeConsumer(@NonNull Firestore db, @NonNull String database) {
+        this.db = db;
+        this.database = database;
     }
 
     @Override
