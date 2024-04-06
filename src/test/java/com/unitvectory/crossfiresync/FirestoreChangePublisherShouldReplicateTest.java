@@ -14,30 +14,38 @@
 package com.unitvectory.crossfiresync;
 
 import java.util.Base64;
+import java.util.Map;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mockito;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.events.cloud.firestore.v1.DocumentEventData;
 import com.unitvectory.fileparamunit.ListFileSource;
-import com.unitvectory.jsonparamunit.JsonClassParamUnit;
+import com.unitvectory.jsonparamunit.JsonNodeParamUnit;
 
 /**
  * The FirestoreChangePublisher utility class test for shouldReplicate.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public class FirestoreChangePublisherShouldReplicateTest extends JsonClassParamUnit<TestRecord, TestRecord> {
+public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUnit {
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    private Firestore db;
 
     private FirestoreChangePublisher firestoreChangePublisher;
 
     protected FirestoreChangePublisherShouldReplicateTest() {
-        super(TestRecord.class);
+        super();
 
         Publisher publisher = Mockito.mock(Publisher.class);
-        Firestore db = Mockito.mock(Firestore.class);
+        this.db = Mockito.mock(Firestore.class);
         this.firestoreChangePublisher = new FirestoreChangePublisher(publisher, db, "test");
     }
 
@@ -48,12 +56,31 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonClassParamU
     }
 
     @Override
-    protected TestRecord process(TestRecord input, String context) {
+    protected JsonNode process(JsonNode input, String context) {
+
         try {
             DocumentEventData firestoreEventData = DocumentEventData
-                    .parseFrom(Base64.getDecoder().decode(input.getValue()));
+                    .parseFrom(Base64.getDecoder().decode(input.asText()));
             boolean shouldReplicate = firestoreChangePublisher.shouldReplicate(firestoreEventData);
-            return TestRecord.builder().value(Boolean.toString(shouldReplicate)).build();
+
+            ObjectNode output = mapper.createObjectNode();
+            output.put("shouldReplicate", shouldReplicate);
+
+            if (firestoreEventData.hasOldValue()) {
+                Map<String, Object> oldValue = FirestoreDocumentConverter.convert(db, firestoreEventData.getOldValue());
+                output.putPOJO("oldValue", oldValue);
+            } else {
+                output.putNull("oldValue");
+            }
+
+            if(firestoreEventData.hasValue()){
+                Map<String, Object> value = FirestoreDocumentConverter.convert(db, firestoreEventData.getValue());
+                output.putPOJO("value", value);
+            } else {
+                output.putNull("value");
+            }
+
+            return output;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

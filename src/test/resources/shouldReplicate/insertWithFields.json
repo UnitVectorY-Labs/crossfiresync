@@ -1,8 +1,15 @@
 {
-    "input": {
-        "value": "CsABCj9wcm9qZWN0cy9maXJlc3RvcmVwcm90bzJqc29uL2RhdGFiYXNlcy9lYXN0NC9kb2N1bWVudHMvdGVzdC9kb2MSKQoXY3Jvc3NmaXJlc3luYzp0aW1lc3RhbXASDlIMCJuhwrAGEJiNuo4CEg0KA2ZvbxIGigEDYmFyEicKHGNyb3NzZmlyZXN5bmM6c291cmNlZGF0YWJhc2USB4oBBHdlc3QaDAieocKwBhCY8ZyCASIMCJ6hwrAGEJjxnIIB"
-    },
+    "input": "CsABCj9wcm9qZWN0cy9maXJlc3RvcmVwcm90bzJqc29uL2RhdGFiYXNlcy9lYXN0NC9kb2N1bWVudHMvdGVzdC9kb2MSKQoXY3Jvc3NmaXJlc3luYzp0aW1lc3RhbXASDlIMCJuhwrAGEJiNuo4CEg0KA2ZvbxIGigEDYmFyEicKHGNyb3NzZmlyZXN5bmM6c291cmNlZGF0YWJhc2USB4oBBHdlc3QaDAieocKwBhCY8ZyCASIMCJ6hwrAGEJjxnIIB",
     "output": {
-        "value": "false"
+        "shouldReplicate": false,
+        "oldValue": null,
+        "value": {
+            "crossfiresync:sourcedatabase": "west",
+            "crossfiresync:timestamp": {
+                "seconds": 1712361627,
+                "nanos": 567183000
+            },
+            "foo": "bar"
+        }
     }
 }

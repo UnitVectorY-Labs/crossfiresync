@@ -1,8 +1,22 @@
 {
-    "input": {
-        "value": "CsEBCj9wcm9qZWN0cy9maXJlc3RvcmVwcm90bzJqc29uL2RhdGFiYXNlcy9lYXN0NC9kb2N1bWVudHMvdGVzdC9kb2MSKQoXY3Jvc3NmaXJlc3luYzp0aW1lc3RhbXASDlIMCIquwrAGEJjvkfICEg8KA2ZvbxIIigEFZWRpdDQSJwocY3Jvc3NmaXJlc3luYzpzb3VyY2VkYXRhYmFzZRIHigEEd2VzdBoMCJ6hwrAGEJjxnIIBIgsIjK7CsAYQmN2wRhLCAQo/cHJvamVjdHMvZmlyZXN0b3JlcHJvdG8yanNvbi9kYXRhYmFzZXMvZWFzdDQvZG9jdW1lbnRzL3Rlc3QvZG9jEikKF2Nyb3NzZmlyZXN5bmM6dGltZXN0YW1wEg5SDAj2q8KwBhCY6uWiARIPCgNmb28SCIoBBWVkaXQzEicKHGNyb3NzZmlyZXN5bmM6c291cmNlZGF0YWJhc2USB4oBBHdlc3QaDAieocKwBhCY8ZyCASIMCPerwrAGEKiAsv8BGh4KF2Nyb3NzZmlyZXN5bmM6dGltZXN0YW1wCgNmb28="
-    },
+    "input": "CsEBCj9wcm9qZWN0cy9maXJlc3RvcmVwcm90bzJqc29uL2RhdGFiYXNlcy9lYXN0NC9kb2N1bWVudHMvdGVzdC9kb2MSKQoXY3Jvc3NmaXJlc3luYzp0aW1lc3RhbXASDlIMCIquwrAGEJjvkfICEg8KA2ZvbxIIigEFZWRpdDQSJwocY3Jvc3NmaXJlc3luYzpzb3VyY2VkYXRhYmFzZRIHigEEd2VzdBoMCJ6hwrAGEJjxnIIBIgsIjK7CsAYQmN2wRhLCAQo/cHJvamVjdHMvZmlyZXN0b3JlcHJvdG8yanNvbi9kYXRhYmFzZXMvZWFzdDQvZG9jdW1lbnRzL3Rlc3QvZG9jEikKF2Nyb3NzZmlyZXN5bmM6dGltZXN0YW1wEg5SDAj2q8KwBhCY6uWiARIPCgNmb28SCIoBBWVkaXQzEicKHGNyb3NzZmlyZXN5bmM6c291cmNlZGF0YWJhc2USB4oBBHdlc3QaDAieocKwBhCY8ZyCASIMCPerwrAGEKiAsv8BGh4KF2Nyb3NzZmlyZXN5bmM6dGltZXN0YW1wCgNmb28=",
     "output": {
-        "value": "false"
+        "shouldReplicate": false,
+        "oldValue": {
+            "crossfiresync:sourcedatabase": "west",
+            "crossfiresync:timestamp": {
+                "seconds": 1712362998,
+                "nanos": 341407000
+            },
+            "foo": "edit3"
+        },
+        "value": {
+            "crossfiresync:sourcedatabase": "west",
+            "crossfiresync:timestamp": {
+                "seconds": 1712363274,
+                "nanos": 776239000
+            },
+            "foo": "edit4"
+        }
     }
 }

@@ -1,8 +1,16 @@
 {
-    "input": {
-        "value": "Et8BCkJwcm9qZWN0cy9maXJlc3RvcmVwcm90bzJqc29uL2RhdGFiYXNlcy9lYXN0NC9kb2N1bWVudHMvdGVzdC9yZWNvcmQSDgoDZm9vEgeKAQRlZGl0EicKHGNyb3NzZmlyZXN5bmM6c291cmNlZGF0YWJhc2USB4oBBHdlc3QSKQoXY3Jvc3NmaXJlc3luYzp0aW1lc3RhbXASDlIMCJ/GwrAGEMCkkZMCEhoKFGNyb3NzZmlyZXN5bmM6ZGVsZXRlEgIIARoLCOz+wbAGEJjAv2AiDAifxsKwBhCYhtO7Aw=="
-    },
+    "input": "Et8BCkJwcm9qZWN0cy9maXJlc3RvcmVwcm90bzJqc29uL2RhdGFiYXNlcy9lYXN0NC9kb2N1bWVudHMvdGVzdC9yZWNvcmQSDgoDZm9vEgeKAQRlZGl0EicKHGNyb3NzZmlyZXN5bmM6c291cmNlZGF0YWJhc2USB4oBBHdlc3QSKQoXY3Jvc3NmaXJlc3luYzp0aW1lc3RhbXASDlIMCJ/GwrAGEMCkkZMCEhoKFGNyb3NzZmlyZXN5bmM6ZGVsZXRlEgIIARoLCOz+wbAGEJjAv2AiDAifxsKwBhCYhtO7Aw==",
     "output": {
-        "value": "false"
+        "shouldReplicate": false,
+        "oldValue": {
+            "crossfiresync:sourcedatabase": "west",
+            "crossfiresync:timestamp": {
+                "seconds": 1712366367,
+                "nanos": 577000000
+            },
+            "crossfiresync:delete": true,
+            "foo": "edit"
+        },
+        "value": null
     }
 }

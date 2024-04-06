@@ -1,8 +1,22 @@
 {
-    "input": {
-        "value": "CsIBCj9wcm9qZWN0cy9maXJlc3RvcmVwcm90bzJqc29uL2RhdGFiYXNlcy9lYXN0NC9kb2N1bWVudHMvdGVzdC9kb2MSKQoXY3Jvc3NmaXJlc3luYzp0aW1lc3RhbXASDlIMCIquwrAGEJjvkfICEicKHGNyb3NzZmlyZXN5bmM6c291cmNlZGF0YWJhc2USB4oBBHdlc3QSDwoDZm9vEgiKAQVlZGl0NRoMCJ6hwrAGEJjxnIIBIgwI8q7CsAYQmP3hvQESwQEKP3Byb2plY3RzL2ZpcmVzdG9yZXByb3RvMmpzb24vZGF0YWJhc2VzL2Vhc3Q0L2RvY3VtZW50cy90ZXN0L2RvYxIpChdjcm9zc2ZpcmVzeW5jOnRpbWVzdGFtcBIOUgwIiq7CsAYQmO+R8gISDwoDZm9vEgiKAQVlZGl0NBInChxjcm9zc2ZpcmVzeW5jOnNvdXJjZWRhdGFiYXNlEgeKAQR3ZXN0GgwInqHCsAYQmPGcggEiCwiMrsKwBhCY3bBGGgUKA2Zvbw=="
-    },
+    "input": "CsIBCj9wcm9qZWN0cy9maXJlc3RvcmVwcm90bzJqc29uL2RhdGFiYXNlcy9lYXN0NC9kb2N1bWVudHMvdGVzdC9kb2MSKQoXY3Jvc3NmaXJlc3luYzp0aW1lc3RhbXASDlIMCIquwrAGEJjvkfICEicKHGNyb3NzZmlyZXN5bmM6c291cmNlZGF0YWJhc2USB4oBBHdlc3QSDwoDZm9vEgiKAQVlZGl0NRoMCJ6hwrAGEJjxnIIBIgwI8q7CsAYQmP3hvQESwQEKP3Byb2plY3RzL2ZpcmVzdG9yZXByb3RvMmpzb24vZGF0YWJhc2VzL2Vhc3Q0L2RvY3VtZW50cy90ZXN0L2RvYxIpChdjcm9zc2ZpcmVzeW5jOnRpbWVzdGFtcBIOUgwIiq7CsAYQmO+R8gISDwoDZm9vEgiKAQVlZGl0NBInChxjcm9zc2ZpcmVzeW5jOnNvdXJjZWRhdGFiYXNlEgeKAQR3ZXN0GgwInqHCsAYQmPGcggEiCwiMrsKwBhCY3bBGGgUKA2Zvbw==",
     "output": {
-        "value": "true"
+        "shouldReplicate": true,
+        "oldValue": {
+            "crossfiresync:sourcedatabase": "west",
+            "crossfiresync:timestamp": {
+                "seconds": 1712363274,
+                "nanos": 776239000
+            },
+            "foo": "edit4"
+        },
+        "value": {
+            "crossfiresync:sourcedatabase": "west",
+            "crossfiresync:timestamp": {
+                "seconds": 1712363274,
+                "nanos": 776239000
+            },
+            "foo": "edit5"
+        }
     }
 }
