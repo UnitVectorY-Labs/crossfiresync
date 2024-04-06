@@ -225,7 +225,7 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
                 Value oldTimestamp = firestoreEventData.getOldValue().getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD,
                         null);
                 Timestamp oldTs = null;
-                if (newTimestamp == null || !newTimestamp.hasTimestampValue()) {
+                if (oldTimestamp == null || !oldTimestamp.hasTimestampValue()) {
                     // There is a new timestamp (previous check) but there was no old timestamp this
                     // was a replicated record that was updated so do not replicate again
                     return false;
