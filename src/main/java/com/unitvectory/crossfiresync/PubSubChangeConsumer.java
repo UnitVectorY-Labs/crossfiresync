@@ -111,6 +111,8 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
         DocumentReference documentReference = this.db.document(documentPath);
         try {
             if (firestoreEventData.hasValue()) {
+                // Perform the update
+
                 Document document = firestoreEventData.getValue();
                 Map<String, Object> record = FirestoreDocumentConverter.convert(db, document);
 
@@ -123,61 +125,24 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
                 record.put(CrossFireSync.SOURCE_DATABASE_FIELD, pubsubDatabase);
 
                 // Perform the update
-                ApiFuture<Void> transaction = db.runTransaction((Transaction.Function<Void>) t -> {
-                    // Attempt to retrieve the existing document
-                    DocumentSnapshot snapshot = t.get(documentReference).get();
-
-                    boolean shouldWrite = false;
-                    if (!snapshot.exists()) {
-                        // Document does not exist
-                        shouldWrite = true;
-                    } else {
-                        // Check if the timestamp is older or not present
-                        Timestamp existingTimestamp = snapshot.contains(CrossFireSync.TIMESTAMP_FIELD)
-                                ? snapshot.getTimestamp(CrossFireSync.TIMESTAMP_FIELD)
-                                : null;
-                        if (existingTimestamp == null || updatedTime.compareTo(existingTimestamp) > 0) {
-                            shouldWrite = true;
-                        }
-                    }
-
-                    // If conditions are met, proceed to write
-                    if (shouldWrite) {
-                        t.set(documentReference, record);
-                    }
-
-                    return null; // Transaction must return null if void
-                });
-
-                // Wait for the transaction to complete
-                transaction.get();
+                this.updateTransaction(documentReference, updatedTime, record);
 
                 // documentReference.set().get();
                 logger.info("Document set: " + documentPath);
             } else {
+                // Flag as delete
+
+                // TODO: This should be the timestamp of the delete not the current time
+                Timestamp deleteTimestamp = Timestamp.now();
 
                 // Prepare the updates, set the deleted flag instead of actually deleting so the
                 // delete in the remote regions will not redundantly cascade to other regions.
                 Map<String, Object> updates = new HashMap<>();
-                updates.put(CrossFireSync.TIMESTAMP_FIELD, Timestamp.now());
+                updates.put(CrossFireSync.TIMESTAMP_FIELD, deleteTimestamp);
                 updates.put(CrossFireSync.DELETE_FIELD, true);
                 updates.put(CrossFireSync.SOURCE_DATABASE_FIELD, pubsubDatabase);
 
-                ApiFuture<Boolean> transaction = db.runTransaction((Transaction.Function<Boolean>) t -> {
-                    // Attempt to retrieve the existing document
-                    DocumentSnapshot snapshot = t.get(documentReference).get();
-
-                    // If the document exists flag it for delete
-                    if (snapshot.exists()) {
-                        t.update(documentReference, updates);
-                        return true;
-                    } else {
-                        return false;
-                    }
-                });
-
-                // Wait for the transaction to complete
-                Boolean flagged = transaction.get();
+                boolean flagged = this.deleteFlagTransaction(documentReference, updates);
 
                 if (flagged) {
                     logger.info("Document deleted: " + documentPath);
@@ -189,5 +154,56 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
         }
 
         logger.info("Pub/Sub message: " + event);
+    }
+
+    void updateTransaction(DocumentReference documentReference, Timestamp updatedTime, Map<String, Object> record)
+            throws InterruptedException, ExecutionException {
+        ApiFuture<Void> transaction = db.runTransaction((Transaction.Function<Void>) t -> {
+            // Attempt to retrieve the existing document
+            DocumentSnapshot snapshot = t.get(documentReference).get();
+
+            boolean shouldWrite = false;
+            if (!snapshot.exists()) {
+                // Document does not exist
+                shouldWrite = true;
+            } else {
+                // Check if the timestamp is older or not present
+                Timestamp existingTimestamp = snapshot.contains(CrossFireSync.TIMESTAMP_FIELD)
+                        ? snapshot.getTimestamp(CrossFireSync.TIMESTAMP_FIELD)
+                        : null;
+                if (existingTimestamp == null || updatedTime.compareTo(existingTimestamp) > 0) {
+                    shouldWrite = true;
+                }
+            }
+
+            // If conditions are met, proceed to write
+            if (shouldWrite) {
+                t.set(documentReference, record);
+            }
+
+            return null; // Transaction must return null if void
+        });
+
+        // Wait for the transaction to complete
+        transaction.get();
+    }
+
+    boolean deleteFlagTransaction(DocumentReference documentReference, Map<String, Object> updates)
+            throws InterruptedException, ExecutionException {
+        ApiFuture<Boolean> transaction = db.runTransaction((Transaction.Function<Boolean>) t -> {
+            // Attempt to retrieve the existing document
+            DocumentSnapshot snapshot = t.get(documentReference).get();
+
+            // If the document exists flag it for delete
+            if (snapshot.exists()) {
+                t.update(documentReference, updates);
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        // Wait for the transaction to complete
+        return transaction.get();
     }
 }
