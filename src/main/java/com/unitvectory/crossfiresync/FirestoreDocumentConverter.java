@@ -37,10 +37,25 @@ import lombok.experimental.UtilityClass;
 @SuppressWarnings("null")
 class FirestoreDocumentConverter {
 
+    /**
+     * Convert the the Firestore Document from the change to a Map that can be used
+     * to set the record in the other regions.
+     * 
+     * @param db       the Firestore database needed to create reference objects
+     * @param document the document
+     * @return the map representation of the document
+     */
     public static Map<String, Object> convert(Firestore db, Document document) {
         return convertMap(db, document.getFieldsMap());
     }
 
+    /**
+     * Convert the document to the object representation
+     * 
+     * @param db       the Firestore database needed to create reference objects
+     * @param document the document
+     * @return the map representation of the document
+     */
     private static Map<String, Object> convertMap(Firestore db, Map<String, Value> document) {
         Map<String, Object> map = new HashMap<>();
 
@@ -94,6 +109,13 @@ class FirestoreDocumentConverter {
         return map;
     }
 
+    /**
+     * Convert the object to the array representation
+     * 
+     * @param db       the Firestore database needed to create reference objects
+     * @param document the document
+     * @return the array representation of the document
+     */
     private static List<Object> convertArray(Firestore db, List<Value> document) {
         List<Object> list = new ArrayList<>();
         for (Value value : document) {
@@ -142,10 +164,24 @@ class FirestoreDocumentConverter {
         return list;
     }
 
+    /**
+     * Convert the Protocol Buffer representation of the LatLng to the GeoPoint
+     * representation needed to set a Firestore database record
+     * 
+     * @param latLng the LatLng
+     * @return the GeoPoint
+     */
     private static GeoPoint convert(LatLng latLng) {
         return new GeoPoint(latLng.getLatitude(), latLng.getLongitude());
     }
 
+    /**
+     * Convert the Protocol Buffer representation of the Timestamp to the Timestamp
+     * representation needed to set a Firestore database record
+     * 
+     * @param timestamp the Protocol Buffer Timestamp
+     * @return the Firestore Timestamp
+     */
     private static com.google.cloud.Timestamp convert(com.google.protobuf.Timestamp timestamp) {
         return com.google.cloud.Timestamp.ofTimeSecondsAndNanos(timestamp.getSeconds(), timestamp.getNanos());
     }

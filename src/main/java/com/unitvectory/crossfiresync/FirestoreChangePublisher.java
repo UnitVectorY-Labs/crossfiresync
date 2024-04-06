@@ -33,7 +33,6 @@ import lombok.NonNull;
 import com.google.protobuf.ByteString;
 
 import java.io.IOException;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -84,81 +83,11 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
         this.database = database;
     }
 
-    boolean shouldReplicate(DocumentEventData firestoreEventData) {
-
-        if (firestoreEventData.hasValue()) {
-            if (!firestoreEventData.hasOldValue()) {
-                // Insert
-                Document document = firestoreEventData.getValue();
-
-                // Inserted without the database replication field, replicate it
-                Value sourceValue = document.getFieldsOrDefault(CrossFireSync.SOURCE_DATABASE_FIELD, null);
-                if (sourceValue == null || !sourceValue.hasStringValue()) {
-                    return true;
-                }
-
-                // Inserted without the timestamp replication field, replicate it
-                Value timestampValue = document.getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD, null);
-                if (timestampValue == null || !timestampValue.hasTimestampValue()) {
-                    return true;
-                }
-
-                // If the source database happens to match the local database region then
-                // replicate the record, otherwise don't replicate
-                return this.database.equals(sourceValue.getStringValue());
-            } else {
-                // Update
-
-                // There is no database replication field in the update, replicate it
-                // It definitely want a replicated record
-                Value newDatabase = firestoreEventData.getValue().getFieldsOrDefault(
-                        CrossFireSync.SOURCE_DATABASE_FIELD,
-                        null);
-                if (newDatabase == null || !newDatabase.hasStringValue()) {
-                    return true;
-                }
-
-                // There is no new timestamp replication field in the update, replicate it
-                // It definitely want a replicated record
-                Value newTimestamp = firestoreEventData.getValue().getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD,
-                        null);
-                if (newTimestamp == null || !newTimestamp.hasTimestampValue()) {
-                    return true;
-                }
-
-                Timestamp newTs = newTimestamp.getTimestampValue();
-
-                Value oldTimestamp = firestoreEventData.getOldValue().getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD,
-                        null);
-                Timestamp oldTs = null;
-                if (newTimestamp == null || !newTimestamp.hasTimestampValue()) {
-                    // There is a new timestamp (previous check) but there was no old timestamp this
-                    // was a replicated record that was updated so do not replicate again
-                    return false;
-                } else {
-                    oldTs = oldTimestamp.getTimestampValue();
-                }
-
-                // The record was updated but the timestamps are the same, this means a user
-                // updated the record so we replicate it out
-                return newTs.equals(oldTs);
-            }
-        } else {
-            // Delete
-
-            // Skip field that have the delete field set, these are not replicated to other
-            // regions; only deleting in local region
-            return !firestoreEventData.getOldValue().containsFields(CrossFireSync.DELETE_FIELD);
-        }
-    }
-
     @Override
     public void accept(CloudEvent event) throws InvalidProtocolBufferException {
 
         // Parse the Firestore data
         DocumentEventData firestoreEventData = DocumentEventData.parseFrom(event.getData().toBytes());
-
-        System.out.println(Base64.getEncoder().encodeToString(event.getData().toBytes()));
 
         // Get the resource name for the document for insert/update/delete
         String resourceName = null;
@@ -224,6 +153,11 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
         publishMessage(pubsubMessage);
     }
 
+    /**
+     * Publish the message to Pub/Sub
+     * 
+     * @param message the message
+     */
     private void publishMessage(PubsubMessage message) {
         try {
             ApiFuture<String> future = publisher.publish(message);
@@ -235,6 +169,80 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
         } catch (InterruptedException | ExecutionException e) {
             logger.severe("Failed to publish to Pub/Sub: " + e.getMessage());
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Test if the change to the firestore record should be replicated to Pub/Sub.
+     * 
+     * @param firestoreEventData the document
+     * @return true if record should replicate, otherwise false
+     */
+    boolean shouldReplicate(DocumentEventData firestoreEventData) {
+
+        if (firestoreEventData.hasValue()) {
+            if (!firestoreEventData.hasOldValue()) {
+                // Insert
+                Document document = firestoreEventData.getValue();
+
+                // Inserted without the database replication field, replicate it
+                Value sourceValue = document.getFieldsOrDefault(CrossFireSync.SOURCE_DATABASE_FIELD, null);
+                if (sourceValue == null || !sourceValue.hasStringValue()) {
+                    return true;
+                }
+
+                // Inserted without the timestamp replication field, replicate it
+                Value timestampValue = document.getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD, null);
+                if (timestampValue == null || !timestampValue.hasTimestampValue()) {
+                    return true;
+                }
+
+                // If the source database happens to match the local database region then
+                // replicate the record, otherwise don't replicate
+                return this.database.equals(sourceValue.getStringValue());
+            } else {
+                // Update
+
+                // There is no database replication field in the update, replicate it
+                // It definitely want a replicated record
+                Value newDatabase = firestoreEventData.getValue().getFieldsOrDefault(
+                        CrossFireSync.SOURCE_DATABASE_FIELD,
+                        null);
+                if (newDatabase == null || !newDatabase.hasStringValue()) {
+                    return true;
+                }
+
+                // There is no new timestamp replication field in the update, replicate it
+                // It definitely want a replicated record
+                Value newTimestamp = firestoreEventData.getValue().getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD,
+                        null);
+                if (newTimestamp == null || !newTimestamp.hasTimestampValue()) {
+                    return true;
+                }
+
+                Timestamp newTs = newTimestamp.getTimestampValue();
+
+                Value oldTimestamp = firestoreEventData.getOldValue().getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD,
+                        null);
+                Timestamp oldTs = null;
+                if (newTimestamp == null || !newTimestamp.hasTimestampValue()) {
+                    // There is a new timestamp (previous check) but there was no old timestamp this
+                    // was a replicated record that was updated so do not replicate again
+                    return false;
+                } else {
+                    oldTs = oldTimestamp.getTimestampValue();
+                }
+
+                // The record was updated but the timestamps are the same, this means a user
+                // updated the record so we replicate it out
+                return newTs.equals(oldTs);
+            }
+        } else {
+            // Delete
+
+            // Skip field that have the delete field set, these are not replicated to other
+            // regions; only deleting in local region
+            return !firestoreEventData.getOldValue().containsFields(CrossFireSync.DELETE_FIELD);
         }
     }
 }

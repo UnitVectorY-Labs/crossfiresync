@@ -13,26 +13,104 @@
  */
 package com.unitvectory.crossfiresync;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.Test;
+import java.util.Base64;
+import java.util.Map.Entry;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.exceptions.base.MockitoException;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.pubsub.v1.Publisher;
+import com.google.pubsub.v1.PubsubMessage;
+import com.unitvectory.fileparamunit.ListFileSource;
+import com.unitvectory.jsonparamunit.JsonNodeParamUnit;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.CloudEventData;
 
 /**
  * FirestoreChangePublisherTest
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public class FirestoreChangePublisherTest {
+public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
 
-    @Test
-    public void test() {
-        Publisher publisher = Mockito.mock(Publisher.class);
-        Firestore db = Mockito.mock(Firestore.class);
-        FirestoreChangePublisher firestoreChangePublisher = new FirestoreChangePublisher(publisher, db, "test");
-        assertNotNull(firestoreChangePublisher);
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    protected FirestoreChangePublisherTest() {
+        super();
+    }
+
+    @ParameterizedTest
+    @ListFileSource(resources = "/publisher/", fileExtension = ".json", recurse = false)
+    public void testIt(String file) {
+        run(file);
+    }
+
+    @Override
+    protected JsonNode process(JsonNode input, String context) {
+
+        try {
+            Publisher publisher = Mockito.mock(Publisher.class);
+
+            @SuppressWarnings("unchecked")
+            ApiFuture<String> apiFuture = Mockito.mock(ApiFuture.class);
+            when(apiFuture.get()).thenReturn("id");
+            when(publisher.publish(any())).thenReturn(apiFuture);
+
+            Firestore db = Mockito.mock(Firestore.class);
+            FirestoreChangePublisher firestoreChangePublisher = new FirestoreChangePublisher(publisher, db, context);
+
+            byte[] inputBytes = Base64.getDecoder().decode(input.asText());
+
+            CloudEvent cloudEvent = Mockito.mock(CloudEvent.class);
+            CloudEventData cloudEventData = Mockito.mock(CloudEventData.class);
+            when(cloudEvent.getData()).thenAnswer(c -> cloudEventData);
+            when(cloudEventData.toBytes()).thenAnswer(c -> inputBytes);
+
+            firestoreChangePublisher.accept(cloudEvent);
+
+            ArgumentCaptor<PubsubMessage> pubsubCaptor = ArgumentCaptor.forClass(PubsubMessage.class);
+            verify(publisher).publish(pubsubCaptor.capture());
+
+            ObjectNode output = mapper.createObjectNode();
+
+            try {
+                PubsubMessage pubsubMessage = pubsubCaptor.getValue();
+
+                ObjectNode publish = mapper.createObjectNode();
+
+                publish.put("data", Base64.getEncoder().encodeToString(pubsubMessage.getData().toByteArray()));
+
+                publish.put("orderingKey", pubsubMessage.getOrderingKey());
+
+                ObjectNode attributes = mapper.createObjectNode();
+                for (Entry<String, String> att : pubsubMessage.getAttributesMap().entrySet()) {
+                    attributes.put(att.getKey(), att.getValue());
+                }
+
+                publish.set("attributes", attributes);
+
+                output.set("publish", publish);
+
+            } catch (MockitoException e) {
+                // If there is no publish method
+            }
+
+            return output;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

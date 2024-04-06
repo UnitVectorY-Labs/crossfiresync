@@ -1,0 +1,13 @@
+{
+    "input": "CmwKQXByb2plY3RzL2ZpcmVzdG9yZXByb3RvMmpzb24vZGF0YWJhc2VzL3dlc3QvZG9jdW1lbnRzL3Rlc3QvcmVjb3JkEg0KA2ZvbxIGigEDYmFyGgsI5P7BsAYQmOW+eCILCOT+wbAGEJjlvng=",
+    "context": "west",
+    "output": {
+        "publish": {
+            "data": "CmwKQXByb2plY3RzL2ZpcmVzdG9yZXByb3RvMmpzb24vZGF0YWJhc2VzL3dlc3QvZG9jdW1lbnRzL3Rlc3QvcmVjb3JkEg0KA2ZvbxIGigEDYmFyGgsI5P7BsAYQmOW+eCILCOT+wbAGEJjlvng=",
+            "orderingKey": "test/record",
+            "attributes": {
+                "database": "west"
+            }
+        }
+    }
+}
