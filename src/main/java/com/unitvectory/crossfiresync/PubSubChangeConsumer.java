@@ -78,7 +78,10 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
         String pubsubDatabase = data.getMessage().getAttribute("database");
 
         // Do not process updates when database change is for the same region
-        if (this.database.equals(pubsubDatabase)) {
+        if (pubsubDatabase == null) {
+            logger.info("PubSub message missing 'database' attribute");
+            return;
+        } else if (this.database.equals(pubsubDatabase)) {
             logger.info("Same database " + this.database + " skipping");
             return;
         }

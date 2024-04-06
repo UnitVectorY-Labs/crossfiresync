@@ -58,7 +58,7 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
     protected JsonNode process(JsonNode input, String context) {
         try {
             Firestore db = Mockito.mock(Firestore.class);
-            PubSubChangeConsumer pubSubChangeConsumer = spy(new PubSubChangeConsumer(db, "test"));
+            PubSubChangeConsumer pubSubChangeConsumer = spy(new PubSubChangeConsumer(db, context));
 
             // Prevent the actual Firestore transaction from being performed
             doNothing().when(pubSubChangeConsumer).updateTransaction(any(), any(), any());

@@ -4,13 +4,14 @@
             "data": "CsYDCktwcm9qZWN0cy9maXJlc3RvcmVwcm90bzJqc29uL2RhdGFiYXNlcy9lYXN0NC9kb2N1bWVudHMvdGVzdC9jb21wbGV4RG9jdW1lbnQSKQoXY3Jvc3NmaXJlc3luYzp0aW1lc3RhbXASDlIMCKK6xrAGEJiPkP0CEg0KB2Jvb2xlYW4SAggBEgoKBG51bGwSAlgAEhAKBnN0cmluZxIGigEDZm9vEl0KBWFycmF5ElRKUgoJigEGc3RyaW5nCgIQBAoJGWZmZmZmZhZACgJYAAoNUgsIxLnGsAYQgIGuNgoUQhIJAAAAAAAACEARAAAAAAAAEEAKDTILCgkKA251bRICEAYSEwoGZG91YmxlEgkZZmZmZmZmAkASJwocY3Jvc3NmaXJlc3luYzpzb3VyY2VkYXRhYmFzZRIHigEEd2VzdBIgCghnZW9wb2ludBIUQhIJAAAAAAAA8D8RAAAAAAAAAEASDQoHaW50ZWdlchICEAESGAoDbWFwEhEyDwoNCgNmb28SBooBA2JhchIbCgl0aW1lc3RhbXASDlIMCP24xrAGEMDU9MACGgwIrLrGsAYQmIbFlgMiDAisusawBhCYhsWWAw==",
             "orderingKey": "test/complexDocument",
             "attributes": {
-                "database": "east4"
+                "database": "west"
             }
         }
     },
+    "context": "east4",
     "output": {
         "update": {
-            "crossfiresync:sourcedatabase": "east4",
+            "crossfiresync:sourcedatabase": "west",
             "crossfiresync:timestamp": {
                 "seconds": 1712430380,
                 "nanos": 852575000

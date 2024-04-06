@@ -8,6 +8,7 @@
             }
         }
     },
+    "context": "east4",
     "output": {
         "update": {
             "crossfiresync:sourcedatabase": "west",
