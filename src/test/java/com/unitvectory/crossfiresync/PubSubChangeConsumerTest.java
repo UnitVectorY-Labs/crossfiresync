@@ -30,7 +30,7 @@ public class PubSubChangeConsumerTest {
     @Test
     public void test() {
         Firestore db = Mockito.mock(Firestore.class);
-        PubSubChangeConsumer consumer = new PubSubChangeConsumer(db, "test");
-        assertNotNull(consumer);
+        PubSubChangeConsumer pubSubChangeConsumer = new PubSubChangeConsumer(db, "test");
+        assertNotNull(pubSubChangeConsumer);
     }
 }

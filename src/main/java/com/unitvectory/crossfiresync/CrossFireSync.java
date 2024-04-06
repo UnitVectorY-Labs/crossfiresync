@@ -13,26 +13,28 @@
  */
 package com.unitvectory.crossfiresync;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.pubsub.v1.Publisher;
+import lombok.experimental.UtilityClass;
 
 /**
- * FirestoreChangePublisherTest
+ * The CrossFireSync class.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public class FirestoreChangePublisherTest {
+@UtilityClass
+class CrossFireSync {
 
-    @Test
-    public void test() {
-        Publisher publisher = Mockito.mock(Publisher.class);
-        Firestore db = Mockito.mock(Firestore.class);
-        FirestoreChangePublisher firestoreChangePublisher = new FirestoreChangePublisher(publisher, db, "test");
-        assertNotNull(firestoreChangePublisher);
-    }
+    /**
+     * Name of the timestamp attribute
+     */
+    public static final String TIMESTAMP_FIELD = "crossfiresync:timestamp";
+
+    /**
+     * Name of the source database attribute
+     */
+    public static final String SOURCE_DATABASE_FIELD = "crossfiresync:sourcedatabase";
+
+    /**
+     * Name of the delete attribute
+     */
+    public static final String DELETE_FIELD = "crossfiresync:delete";
 }

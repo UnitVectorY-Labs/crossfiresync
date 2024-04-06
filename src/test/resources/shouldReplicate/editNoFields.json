@@ -1,0 +1,8 @@
+{
+    "input": {
+        "value": "Cm4KQXByb2plY3RzL2ZpcmVzdG9yZXByb3RvMmpzb24vZGF0YWJhc2VzL3dlc3QvZG9jdW1lbnRzL3Rlc3QvcmVjb3JkEg4KA2ZvbxIHigEEZWRpdBoLCOT+wbAGEJjlvngiDAj/msKwBhCgyY3xARJsCkFwcm9qZWN0cy9maXJlc3RvcmVwcm90bzJqc29uL2RhdGFiYXNlcy93ZXN0L2RvY3VtZW50cy90ZXN0L3JlY29yZBINCgNmb28SBooBA2JhchoLCOT+wbAGEJjlvngiCwjk/sGwBhCY5b54GgUKA2Zvbw=="
+    },
+    "output": {
+        "value": "true"
+    }
+}

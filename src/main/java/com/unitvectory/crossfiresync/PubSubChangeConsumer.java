@@ -13,9 +13,13 @@
  */
 package com.unitvectory.crossfiresync;
 
+import com.google.api.core.ApiFuture;
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
+import com.google.cloud.firestore.Transaction;
 import com.google.cloud.functions.CloudEventsFunction;
 import com.google.events.cloud.firestore.v1.Document;
 import com.google.events.cloud.firestore.v1.DocumentEventData;
@@ -26,6 +30,8 @@ import io.cloudevents.CloudEvent;
 import lombok.NonNull;
 
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
@@ -106,13 +112,79 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
         try {
             if (firestoreEventData.hasValue()) {
                 Document document = firestoreEventData.getValue();
-                documentReference.set(FirestoreDocumentConverter.convert(db, document)).get();
+                Map<String, Object> record = FirestoreDocumentConverter.convert(db, document);
+
+                Timestamp updatedTime = Timestamp.fromProto(document.getUpdateTime());
+
+                // For cross region replication to work properly two additional attributes must
+                // be written to the document to indicate what region the replicated attribute
+                // came from and the timestamp of when the record was updated
+                record.put(CrossFireSync.TIMESTAMP_FIELD, updatedTime);
+                record.put(CrossFireSync.SOURCE_DATABASE_FIELD, pubsubDatabase);
+
+                // Perform the update
+                ApiFuture<Void> transaction = db.runTransaction((Transaction.Function<Void>) t -> {
+                    // Attempt to retrieve the existing document
+                    DocumentSnapshot snapshot = t.get(documentReference).get();
+
+                    boolean shouldWrite = false;
+                    if (!snapshot.exists()) {
+                        // Document does not exist
+                        shouldWrite = true;
+                    } else {
+                        // Check if the timestamp is older or not present
+                        Timestamp existingTimestamp = snapshot.contains(CrossFireSync.TIMESTAMP_FIELD)
+                                ? snapshot.getTimestamp(CrossFireSync.TIMESTAMP_FIELD)
+                                : null;
+                        if (existingTimestamp == null || updatedTime.compareTo(existingTimestamp) > 0) {
+                            shouldWrite = true;
+                        }
+                    }
+
+                    // If conditions are met, proceed to write
+                    if (shouldWrite) {
+                        t.set(documentReference, record);
+                    }
+
+                    return null; // Transaction must return null if void
+                });
+
+                // Wait for the transaction to complete
+                transaction.get();
+
+                // documentReference.set().get();
                 logger.info("Document set: " + documentPath);
             } else {
-                documentReference.delete().get();
-                logger.info("Document deleted: " + documentPath);
+
+                // Prepare the updates, set the deleted flag instead of actually deleting so the
+                // delete in the remote regions will not redundantly cascade to other regions.
+                Map<String, Object> updates = new HashMap<>();
+                updates.put(CrossFireSync.TIMESTAMP_FIELD, Timestamp.now());
+                updates.put(CrossFireSync.DELETE_FIELD, true);
+                updates.put(CrossFireSync.SOURCE_DATABASE_FIELD, pubsubDatabase);
+
+                ApiFuture<Boolean> transaction = db.runTransaction((Transaction.Function<Boolean>) t -> {
+                    // Attempt to retrieve the existing document
+                    DocumentSnapshot snapshot = t.get(documentReference).get();
+
+                    // If the document exists flag it for delete
+                    if (snapshot.exists()) {
+                        t.update(documentReference, updates);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+
+                // Wait for the transaction to complete
+                Boolean flagged = transaction.get();
+
+                if (flagged) {
+                    logger.info("Document deleted: " + documentPath);
+                }
             }
         } catch (InterruptedException | ExecutionException e) {
+            // TODO: Handle exceptions better
             logger.severe("Failed: " + e.getMessage());
         }
 
