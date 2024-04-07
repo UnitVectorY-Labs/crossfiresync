@@ -1,0 +1,25 @@
+{
+    "input": {
+        "message": {
+            "data": "CoICCj9wcm9qZWN0cy9maXJlc3RvcmVwcm90bzJqc29uL2RhdGFiYXNlcy9lYXN0NC9kb2N1bWVudHMvdGVzdC9hcnISKAoXY3Jvc3NmaXJlc3luYzp0aW1lc3RhbXASDVILCLnux7AGEJi3/yISUAoDZm9vEklKRwoCCAEKQSo/cHJvamVjdHMvZmlyZXN0b3JlcHJvdG8yanNvbi9kYXRhYmFzZXMvZWFzdDQvZG9jdW1lbnRzL3Rlc3QvZm9vEicKHGNyb3NzZmlyZXN5bmM6c291cmNlZGF0YWJhc2USB4oBBHdlc3QaDAjD7sewBhCYnZqMASIMCMPux7AGEJidmowB",
+            "orderingKey": "test/complexDocument",
+            "attributes": {
+                "database": "west"
+            }
+        }
+    },
+    "context": "east4",
+    "output": {
+        "update": {
+            "crossfiresync:sourcedatabase": "west",
+            "crossfiresync:timestamp": {
+                "seconds": 1712453443,
+                "nanos": 294031000
+            },
+            "foo": [
+                true,
+                "projects/example/databases/east4/documents/test/foo"
+            ]
+        }
+    }
+}

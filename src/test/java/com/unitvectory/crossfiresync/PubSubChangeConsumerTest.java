@@ -61,6 +61,7 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
         run(file);
     }
 
+    @SuppressWarnings("null")
     @Override
     protected JsonNode process(JsonNode input, String context) {
         try {
