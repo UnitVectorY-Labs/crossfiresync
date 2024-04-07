@@ -14,6 +14,7 @@
 package com.unitvectory.crossfiresync;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -24,13 +25,18 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.unitvectory.fileparamunit.ListFileSource;
 import com.unitvectory.jsonparamunit.JsonNodeParamUnit;
+import com.unitvectory.jsonparamunit.JsonParamUnitConfig;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
@@ -42,10 +48,11 @@ import io.cloudevents.CloudEventData;
  */
 public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper()
+            .registerModule(new SimpleModule().addSerializer(new DocumentReferenceSerializer()));
 
     public PubSubChangeConsumerTest() {
-        super();
+        super(JsonParamUnitConfig.builder().mapper(mapper).build());
     }
 
     @ParameterizedTest
@@ -58,6 +65,23 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
     protected JsonNode process(JsonNode input, String context) {
         try {
             Firestore db = Mockito.mock(Firestore.class);
+
+            when(db.document(anyString())).thenAnswer(new Answer<DocumentReference>() {
+                @Override
+                public DocumentReference answer(InvocationOnMock invocation) throws Throwable {
+                    // Capture the input string
+                    String inputString = invocation.getArgument(0);
+
+                    // Mock DocumentReference
+                    DocumentReference mockDocumentRef = Mockito.mock(DocumentReference.class);
+                    // Configure mock to return the input string as ID
+                    when(mockDocumentRef.getId())
+                            .thenReturn("projects/example/databases/" + context + "/documents/" + inputString);
+
+                    return mockDocumentRef;
+                }
+            });
+
             PubSubChangeConsumer pubSubChangeConsumer = spy(new PubSubChangeConsumer(db, context));
 
             // Prevent the actual Firestore transaction from being performed

@@ -89,7 +89,7 @@ class FirestoreDocumentConverter {
                     map.put(key, null);
                     break;
                 case REFERENCE_VALUE:
-                    map.put(key, db.document(value.getReferenceValue()));
+                    map.put(key, db.document(DocumentResourceNameUtil.getDocumentPath(value.getReferenceValue())));
                     break;
                 case STRING_VALUE:
                     map.put(key, value.getStringValue());
@@ -146,7 +146,7 @@ class FirestoreDocumentConverter {
                     list.add(null);
                     break;
                 case REFERENCE_VALUE:
-                    list.add(db.document(value.getReferenceValue()));
+                    list.add(db.document(DocumentResourceNameUtil.getDocumentPath(value.getReferenceValue())));
                     break;
                 case STRING_VALUE:
                     list.add(value.getStringValue());
