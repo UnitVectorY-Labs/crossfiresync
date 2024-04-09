@@ -59,22 +59,24 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
     protected JsonNode process(JsonNode input, String context) {
 
         try {
-            DocumentEventData firestoreEventData = DocumentEventData
-                    .parseFrom(Base64.getDecoder().decode(input.asText()));
+            DocumentEventData firestoreEventData =
+                    DocumentEventData.parseFrom(Base64.getDecoder().decode(input.asText()));
             boolean shouldReplicate = firestoreChangePublisher.shouldReplicate(firestoreEventData);
 
             ObjectNode output = mapper.createObjectNode();
             output.put("shouldReplicate", shouldReplicate);
 
             if (firestoreEventData.hasOldValue()) {
-                Map<String, Object> oldValue = FirestoreDocumentConverter.convert(db, firestoreEventData.getOldValue());
+                Map<String, Object> oldValue =
+                        FirestoreDocumentConverter.convert(db, firestoreEventData.getOldValue());
                 output.putPOJO("oldValue", oldValue);
             } else {
                 output.putNull("oldValue");
             }
 
-            if(firestoreEventData.hasValue()){
-                Map<String, Object> value = FirestoreDocumentConverter.convert(db, firestoreEventData.getValue());
+            if (firestoreEventData.hasValue()) {
+                Map<String, Object> value =
+                        FirestoreDocumentConverter.convert(db, firestoreEventData.getValue());
                 output.putPOJO("value", value);
             } else {
                 output.putNull("value");

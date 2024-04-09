@@ -39,8 +39,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 /**
- * This class is responsible for consuming changes from Firestore and publishing
- * them to a PubSub topic.
+ * This class is responsible for consuming changes from Firestore and publishing them to a PubSub
+ * topic.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
@@ -56,8 +56,8 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
     private final Firestore db;
 
     public FirestoreChangePublisher() {
-        this(System.getenv("GOOGLE_CLOUD_PROJECT"),
-                System.getenv("TOPIC"), System.getenv("DATABASE"));
+        this(System.getenv("GOOGLE_CLOUD_PROJECT"), System.getenv("TOPIC"),
+                System.getenv("DATABASE"));
     }
 
     public FirestoreChangePublisher(String project, String topic, String database) {
@@ -72,12 +72,11 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
 
         this.database = database;
 
-        this.db = FirestoreOptions.newBuilder()
-                .setDatabaseId(database)
-                .build().getService();
+        this.db = FirestoreOptions.newBuilder().setDatabaseId(database).build().getService();
     }
 
-    public FirestoreChangePublisher(@NonNull Publisher publisher, @NonNull Firestore db, @NonNull String database) {
+    public FirestoreChangePublisher(@NonNull Publisher publisher, @NonNull Firestore db,
+            @NonNull String database) {
         this.publisher = publisher;
         this.db = db;
         this.database = database;
@@ -87,7 +86,8 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
     public void accept(CloudEvent event) throws InvalidProtocolBufferException {
 
         // Parse the Firestore data
-        DocumentEventData firestoreEventData = DocumentEventData.parseFrom(event.getData().toBytes());
+        DocumentEventData firestoreEventData =
+                DocumentEventData.parseFrom(event.getData().toBytes());
 
         // Get the resource name for the document for insert/update/delete
         String resourceName = null;
@@ -118,7 +118,8 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
         }
 
         // Check to see if this is a delete
-        if (firestoreEventData.hasValue() && firestoreEventData.getValue().containsFields(CrossFireSync.DELETE_FIELD)) {
+        if (firestoreEventData.hasValue()
+                && firestoreEventData.getValue().containsFields(CrossFireSync.DELETE_FIELD)) {
             // The delete field being present is the signal to delete the record in the
             // local region without publishing to the PubSub topic.
             DocumentReference documentReference = this.db.document(documentPath);
@@ -137,11 +138,9 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
         attributes.put("database", database);
 
         // Prepare the message to be published
-        PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
-                .setOrderingKey(documentPath)
+        PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setOrderingKey(documentPath)
                 .setData(ByteString.copyFrom(event.getData().toBytes()))
-                .putAllAttributes(attributes)
-                .build();
+                .putAllAttributes(attributes).build();
 
         // Publish the message
         publishMessage(pubsubMessage);
@@ -180,13 +179,15 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
                 Document document = firestoreEventData.getValue();
 
                 // Inserted without the database replication field, replicate it
-                Value sourceValue = document.getFieldsOrDefault(CrossFireSync.SOURCE_DATABASE_FIELD, null);
+                Value sourceValue =
+                        document.getFieldsOrDefault(CrossFireSync.SOURCE_DATABASE_FIELD, null);
                 if (sourceValue == null || !sourceValue.hasStringValue()) {
                     return true;
                 }
 
                 // Inserted without the timestamp replication field, replicate it
-                Value timestampValue = document.getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD, null);
+                Value timestampValue =
+                        document.getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD, null);
                 if (timestampValue == null || !timestampValue.hasTimestampValue()) {
                     return true;
                 }
@@ -199,25 +200,24 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
 
                 // There is no database replication field in the update, replicate it
                 // It definitely want a replicated record
-                Value newDatabase = firestoreEventData.getValue().getFieldsOrDefault(
-                        CrossFireSync.SOURCE_DATABASE_FIELD,
-                        null);
+                Value newDatabase = firestoreEventData.getValue()
+                        .getFieldsOrDefault(CrossFireSync.SOURCE_DATABASE_FIELD, null);
                 if (newDatabase == null || !newDatabase.hasStringValue()) {
                     return true;
                 }
 
                 // There is no new timestamp replication field in the update, replicate it
                 // It definitely want a replicated record
-                Value newTimestamp = firestoreEventData.getValue().getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD,
-                        null);
+                Value newTimestamp = firestoreEventData.getValue()
+                        .getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD, null);
                 if (newTimestamp == null || !newTimestamp.hasTimestampValue()) {
                     return true;
                 }
 
                 Timestamp newTs = newTimestamp.getTimestampValue();
 
-                Value oldTimestamp = firestoreEventData.getOldValue().getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD,
-                        null);
+                Value oldTimestamp = firestoreEventData.getOldValue()
+                        .getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD, null);
                 Timestamp oldTs = null;
                 if (oldTimestamp == null || !oldTimestamp.hasTimestampValue()) {
                     // There is a new timestamp (previous check) but there was no old timestamp this
@@ -241,15 +241,16 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
     }
 
     /**
-     * Deletes the actual document, used for two phase deletes after a document is
-     * flagged for deletion.
+     * Deletes the actual document, used for two phase deletes after a document is flagged for
+     * deletion.
      * 
      * @param documentReference the document reference
      */
     void deleteDocument(DocumentReference documentReference) {
         try {
             documentReference.delete().get();
-            logger.info("Deleted: " + DocumentResourceNameUtil.getDocumentPath(documentReference.getId()));
+            logger.info("Deleted: "
+                    + DocumentResourceNameUtil.getDocumentPath(documentReference.getId()));
         } catch (InterruptedException | ExecutionException e) {
             // TODO: Handle exceptions better
             logger.severe("Failed: " + e.getMessage());

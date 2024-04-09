@@ -32,8 +32,8 @@ public class DocumentReferenceSerializer extends StdSerializer<DocumentReference
     }
 
     @Override
-    public void serialize(DocumentReference value, JsonGenerator jsonGenerator, SerializerProvider serializers)
-            throws IOException {
+    public void serialize(DocumentReference value, JsonGenerator jsonGenerator,
+            SerializerProvider serializers) throws IOException {
         jsonGenerator.writeString(value.getId());
     }
 }

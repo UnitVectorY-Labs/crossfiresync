@@ -23,7 +23,8 @@ import com.unitvectory.jsonparamunit.JsonClassParamUnit;
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public class DocumentResourceNameUtilGetDatabaseIdTest extends JsonClassParamUnit<TestRecord, TestRecord> {
+public class DocumentResourceNameUtilGetDatabaseIdTest
+        extends JsonClassParamUnit<TestRecord, TestRecord> {
 
     protected DocumentResourceNameUtilGetDatabaseIdTest() {
         super(TestRecord.class);
@@ -37,6 +38,7 @@ public class DocumentResourceNameUtilGetDatabaseIdTest extends JsonClassParamUni
 
     @Override
     protected TestRecord process(TestRecord input, String context) {
-        return TestRecord.builder().value(DocumentResourceNameUtil.getDatabaseId(input.getValue())).build();
+        return TestRecord.builder().value(DocumentResourceNameUtil.getDatabaseId(input.getValue()))
+                .build();
     }
 }

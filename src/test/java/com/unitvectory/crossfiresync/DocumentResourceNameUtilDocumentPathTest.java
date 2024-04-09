@@ -23,7 +23,8 @@ import com.unitvectory.jsonparamunit.JsonClassParamUnit;
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public class DocumentResourceNameUtilDocumentPathTest extends JsonClassParamUnit<TestRecord, TestRecord> {
+public class DocumentResourceNameUtilDocumentPathTest
+        extends JsonClassParamUnit<TestRecord, TestRecord> {
 
     protected DocumentResourceNameUtilDocumentPathTest() {
         super(TestRecord.class);
@@ -37,6 +38,7 @@ public class DocumentResourceNameUtilDocumentPathTest extends JsonClassParamUnit
 
     @Override
     protected TestRecord process(TestRecord input, String context) {
-        return TestRecord.builder().value(DocumentResourceNameUtil.getDocumentPath(input.getValue())).build();
+        return TestRecord.builder()
+                .value(DocumentResourceNameUtil.getDocumentPath(input.getValue())).build();
     }
 }

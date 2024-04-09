@@ -29,19 +29,21 @@ class DocumentResourceNameUtil {
     /**
      * The pattern to extract the document path
      */
-    private static final Pattern DOCUMENT_PATH_PATTERN = Pattern.compile("projects/.*/databases/.*/documents/(.+)");
+    private static final Pattern DOCUMENT_PATH_PATTERN =
+            Pattern.compile("projects/.*/databases/.*/documents/(.+)");
 
     /**
      * The pattern for the database id
      */
-    private static final Pattern DATABASE_ID_PATTERN = Pattern.compile("(projects/.*/databases/)(.*?)(/documents/.+)");
+    private static final Pattern DATABASE_ID_PATTERN =
+            Pattern.compile("(projects/.*/databases/)(.*?)(/documents/.+)");
 
     /**
      * Extracts the document_path from the resource name using a Matcher.
      * 
      * The resource name in the format of
-     * `projects/{project_id}/databases/{database_id}/documents/{document_path}`
-     * will have just the `{document_path}` returned.
+     * `projects/{project_id}/databases/{database_id}/documents/{document_path}` will have just the
+     * `{document_path}` returned.
      * 
      * @param resourceName the resource name
      * @return the document path
@@ -64,8 +66,8 @@ class DocumentResourceNameUtil {
      * Extracts the database_id from the resource name.
      *
      * The resource name in the format of
-     * `projects/{project_id}/databases/{database_id}/documents/{document_path}`
-     * will have just the `{database_id}` returned.
+     * `projects/{project_id}/databases/{database_id}/documents/{document_path}` will have just the
+     * `{database_id}` returned.
      *
      * @param resourceName the resource name
      * @return the database id, or null if not found

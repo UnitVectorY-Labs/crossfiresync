@@ -28,6 +28,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TestRecord {
-    
+
     private String value;
 }

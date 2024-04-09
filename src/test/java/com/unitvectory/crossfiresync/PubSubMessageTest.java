@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 public class PubSubMessageTest {
 
     @Test
-    public void nullAttributeTest(){
+    public void nullAttributeTest() {
         PubSubMessage message = new PubSubMessage();
         assertNull(message.getAttribute("foo"));
     }

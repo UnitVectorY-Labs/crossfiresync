@@ -28,8 +28,8 @@ import com.google.type.LatLng;
 import lombok.experimental.UtilityClass;
 
 /**
- * Utility to convert the Protocol Buffere Firestore Document from eventarc to a
- * represenatation that can be written to Firestore.
+ * Utility to convert the Protocol Buffere Firestore Document from eventarc to a represenatation
+ * that can be written to Firestore.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
@@ -38,10 +38,10 @@ import lombok.experimental.UtilityClass;
 class FirestoreDocumentConverter {
 
     /**
-     * Convert the the Firestore Document from the change to a Map that can be used
-     * to set the record in the other regions.
+     * Convert the the Firestore Document from the change to a Map that can be used to set the
+     * record in the other regions.
      * 
-     * @param db       the Firestore database needed to create reference objects
+     * @param db the Firestore database needed to create reference objects
      * @param document the document
      * @return the map representation of the document
      */
@@ -52,7 +52,7 @@ class FirestoreDocumentConverter {
     /**
      * Convert the document to the object representation
      * 
-     * @param db       the Firestore database needed to create reference objects
+     * @param db the Firestore database needed to create reference objects
      * @param document the document
      * @return the map representation of the document
      */
@@ -89,7 +89,8 @@ class FirestoreDocumentConverter {
                     map.put(key, null);
                     break;
                 case REFERENCE_VALUE:
-                    map.put(key, db.document(DocumentResourceNameUtil.getDocumentPath(value.getReferenceValue())));
+                    map.put(key, db.document(
+                            DocumentResourceNameUtil.getDocumentPath(value.getReferenceValue())));
                     break;
                 case STRING_VALUE:
                     map.put(key, value.getStringValue());
@@ -112,7 +113,7 @@ class FirestoreDocumentConverter {
     /**
      * Convert the object to the array representation
      * 
-     * @param db       the Firestore database needed to create reference objects
+     * @param db the Firestore database needed to create reference objects
      * @param document the document
      * @return the array representation of the document
      */
@@ -146,7 +147,8 @@ class FirestoreDocumentConverter {
                     list.add(null);
                     break;
                 case REFERENCE_VALUE:
-                    list.add(db.document(DocumentResourceNameUtil.getDocumentPath(value.getReferenceValue())));
+                    list.add(db.document(
+                            DocumentResourceNameUtil.getDocumentPath(value.getReferenceValue())));
                     break;
                 case STRING_VALUE:
                     list.add(value.getStringValue());
@@ -165,8 +167,8 @@ class FirestoreDocumentConverter {
     }
 
     /**
-     * Convert the Protocol Buffer representation of the LatLng to the GeoPoint
-     * representation needed to set a Firestore database record
+     * Convert the Protocol Buffer representation of the LatLng to the GeoPoint representation
+     * needed to set a Firestore database record
      * 
      * @param latLng the LatLng
      * @return the GeoPoint
@@ -176,13 +178,14 @@ class FirestoreDocumentConverter {
     }
 
     /**
-     * Convert the Protocol Buffer representation of the Timestamp to the Timestamp
-     * representation needed to set a Firestore database record
+     * Convert the Protocol Buffer representation of the Timestamp to the Timestamp representation
+     * needed to set a Firestore database record
      * 
      * @param timestamp the Protocol Buffer Timestamp
      * @return the Firestore Timestamp
      */
     private static com.google.cloud.Timestamp convert(com.google.protobuf.Timestamp timestamp) {
-        return com.google.cloud.Timestamp.ofTimeSecondsAndNanos(timestamp.getSeconds(), timestamp.getNanos());
+        return com.google.cloud.Timestamp.ofTimeSecondsAndNanos(timestamp.getSeconds(),
+                timestamp.getNanos());
     }
 }

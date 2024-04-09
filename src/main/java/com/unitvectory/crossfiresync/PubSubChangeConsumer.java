@@ -36,8 +36,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 /**
- * This class is tasked with receiving changes from a PubSub topic and writing
- * them to Firestore in another region.
+ * This class is tasked with receiving changes from a PubSub topic and writing them to Firestore in
+ * another region.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
@@ -58,9 +58,7 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
 
     public PubSubChangeConsumer(@NonNull String database) {
         this.database = database;
-        this.db = FirestoreOptions.newBuilder()
-                .setDatabaseId(database)
-                .build().getService();
+        this.db = FirestoreOptions.newBuilder().setDatabaseId(database).build().getService();
     }
 
     public PubSubChangeConsumer(@NonNull Firestore db, @NonNull String database) {
@@ -159,8 +157,8 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
         logger.info("Pub/Sub message: " + event);
     }
 
-    void updateTransaction(DocumentReference documentReference, Timestamp updatedTime, Map<String, Object> record)
-            throws InterruptedException, ExecutionException {
+    void updateTransaction(DocumentReference documentReference, Timestamp updatedTime,
+            Map<String, Object> record) throws InterruptedException, ExecutionException {
         ApiFuture<Void> transaction = db.runTransaction((Transaction.Function<Void>) t -> {
             // Attempt to retrieve the existing document
             DocumentSnapshot snapshot = t.get(documentReference).get();

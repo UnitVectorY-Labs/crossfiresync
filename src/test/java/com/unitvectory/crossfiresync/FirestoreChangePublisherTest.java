@@ -72,7 +72,8 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
             ApiFuture<String> apiFuture = Mockito.mock(ApiFuture.class);
             when(apiFuture.get()).thenReturn("id");
 
-            ArgumentCaptor<PubsubMessage> pubsubCaptor = ArgumentCaptor.forClass(PubsubMessage.class);
+            ArgumentCaptor<PubsubMessage> pubsubCaptor =
+                    ArgumentCaptor.forClass(PubsubMessage.class);
             when(publisher.publish(pubsubCaptor.capture())).thenReturn(apiFuture);
 
             Firestore db = Mockito.mock(Firestore.class);
@@ -86,20 +87,22 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
                     // Mock DocumentReference
                     DocumentReference mockDocumentRef = Mockito.mock(DocumentReference.class);
                     // Configure mock to return the input string as ID
-                    when(mockDocumentRef.getId())
-                            .thenReturn("projects/example/databases/" + context + "/documents/" + inputString);
+                    when(mockDocumentRef.getId()).thenReturn(
+                            "projects/example/databases/" + context + "/documents/" + inputString);
 
                     return mockDocumentRef;
                 }
             });
 
-            FirestoreChangePublisher firestoreChangePublisher = spy(
-                    new FirestoreChangePublisher(publisher, db, context));
+            FirestoreChangePublisher firestoreChangePublisher =
+                    spy(new FirestoreChangePublisher(publisher, db, context));
 
             // Capture the delete document
-            ArgumentCaptor<DocumentReference> deleteDocumentCaptor = ArgumentCaptor.forClass(DocumentReference.class);
+            ArgumentCaptor<DocumentReference> deleteDocumentCaptor =
+                    ArgumentCaptor.forClass(DocumentReference.class);
 
-            doNothing().when(firestoreChangePublisher).deleteDocument(deleteDocumentCaptor.capture());
+            doNothing().when(firestoreChangePublisher)
+                    .deleteDocument(deleteDocumentCaptor.capture());
 
             byte[] inputBytes = Base64.getDecoder().decode(input.asText());
 
@@ -117,7 +120,8 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
 
                 ObjectNode publish = mapper.createObjectNode();
 
-                publish.put("data", Base64.getEncoder().encodeToString(pubsubMessage.getData().toByteArray()));
+                publish.put("data",
+                        Base64.getEncoder().encodeToString(pubsubMessage.getData().toByteArray()));
 
                 publish.put("orderingKey", pubsubMessage.getOrderingKey());
 

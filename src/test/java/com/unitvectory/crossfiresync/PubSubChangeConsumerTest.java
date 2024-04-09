@@ -76,8 +76,8 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
                     // Mock DocumentReference
                     DocumentReference mockDocumentRef = Mockito.mock(DocumentReference.class);
                     // Configure mock to return the input string as ID
-                    when(mockDocumentRef.getId())
-                            .thenReturn("projects/example/databases/" + context + "/documents/" + inputString);
+                    when(mockDocumentRef.getId()).thenReturn(
+                            "projects/example/databases/" + context + "/documents/" + inputString);
 
                     return mockDocumentRef;
                 }
@@ -89,7 +89,8 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
             @SuppressWarnings("unchecked")
             ArgumentCaptor<Map<String, Object>> updateCaptor = ArgumentCaptor.forClass(Map.class);
 
-            doNothing().when(pubSubChangeConsumer).updateTransaction(any(), any(), updateCaptor.capture());
+            doNothing().when(pubSubChangeConsumer).updateTransaction(any(), any(),
+                    updateCaptor.capture());
 
             byte[] inputBytes = mapper.writeValueAsString(input).getBytes();
 

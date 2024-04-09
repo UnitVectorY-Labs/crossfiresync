@@ -26,6 +26,6 @@ import lombok.NoArgsConstructor;
 class PubSubPublish {
 
     private PubSubMessage message;
-    
+
     private String subscription;
 }
