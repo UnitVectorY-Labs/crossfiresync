@@ -13,8 +13,9 @@
  */
 package com.unitvectory.crossfiresync;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Base64;
@@ -24,11 +25,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.pubsub.v1.PubsubMessage;
@@ -57,6 +61,7 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
         run(file);
     }
 
+    @SuppressWarnings("null")
     @Override
     protected JsonNode process(JsonNode input, String context) {
 
@@ -66,10 +71,35 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
             @SuppressWarnings("unchecked")
             ApiFuture<String> apiFuture = Mockito.mock(ApiFuture.class);
             when(apiFuture.get()).thenReturn("id");
-            when(publisher.publish(any())).thenReturn(apiFuture);
+
+            ArgumentCaptor<PubsubMessage> pubsubCaptor = ArgumentCaptor.forClass(PubsubMessage.class);
+            when(publisher.publish(pubsubCaptor.capture())).thenReturn(apiFuture);
 
             Firestore db = Mockito.mock(Firestore.class);
-            FirestoreChangePublisher firestoreChangePublisher = new FirestoreChangePublisher(publisher, db, context);
+
+            when(db.document(anyString())).thenAnswer(new Answer<DocumentReference>() {
+                @Override
+                public DocumentReference answer(InvocationOnMock invocation) throws Throwable {
+                    // Capture the input string
+                    String inputString = invocation.getArgument(0);
+
+                    // Mock DocumentReference
+                    DocumentReference mockDocumentRef = Mockito.mock(DocumentReference.class);
+                    // Configure mock to return the input string as ID
+                    when(mockDocumentRef.getId())
+                            .thenReturn("projects/example/databases/" + context + "/documents/" + inputString);
+
+                    return mockDocumentRef;
+                }
+            });
+
+            FirestoreChangePublisher firestoreChangePublisher = spy(
+                    new FirestoreChangePublisher(publisher, db, context));
+
+            // Capture the delete document
+            ArgumentCaptor<DocumentReference> deleteDocumentCaptor = ArgumentCaptor.forClass(DocumentReference.class);
+
+            doNothing().when(firestoreChangePublisher).deleteDocument(deleteDocumentCaptor.capture());
 
             byte[] inputBytes = Base64.getDecoder().decode(input.asText());
 
@@ -79,9 +109,6 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
             when(cloudEventData.toBytes()).thenAnswer(c -> inputBytes);
 
             firestoreChangePublisher.accept(cloudEvent);
-
-            ArgumentCaptor<PubsubMessage> pubsubCaptor = ArgumentCaptor.forClass(PubsubMessage.class);
-            verify(publisher).publish(pubsubCaptor.capture());
 
             ObjectNode output = mapper.createObjectNode();
 
@@ -105,6 +132,13 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
 
             } catch (MockitoException e) {
                 // If there is no publish method
+            }
+
+            try {
+                DocumentReference deleteDocument = deleteDocumentCaptor.getValue();
+                output.put("deleteDocument", deleteDocument.getId());
+            } catch (MockitoException e) {
+                // If there is no update method called
             }
 
             return output;

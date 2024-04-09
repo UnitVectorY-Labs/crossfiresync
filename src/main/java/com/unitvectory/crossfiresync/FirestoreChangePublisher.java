@@ -122,14 +122,8 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
             // The delete field being present is the signal to delete the record in the
             // local region without publishing to the PubSub topic.
             DocumentReference documentReference = this.db.document(documentPath);
-            try {
-                documentReference.delete().get();
-                logger.info("Deleted: " + documentPath);
-                return;
-            } catch (InterruptedException | ExecutionException e) {
-                // TODO: Handle exceptions better
-                logger.severe("Failed: " + e.getMessage());
-            }
+            deleteDocument(documentReference);
+            return;
         }
 
         // Check to see if the record should be replicated
@@ -243,6 +237,22 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
             // Skip field that have the delete field set, these are not replicated to other
             // regions; only deleting in local region
             return !firestoreEventData.getOldValue().containsFields(CrossFireSync.DELETE_FIELD);
+        }
+    }
+
+    /**
+     * Deletes the actual document, used for two phase deletes after a document is
+     * flagged for deletion.
+     * 
+     * @param documentReference the document reference
+     */
+    void deleteDocument(DocumentReference documentReference) {
+        try {
+            documentReference.delete().get();
+            logger.info("Deleted: " + DocumentResourceNameUtil.getDocumentPath(documentReference.getId()));
+        } catch (InterruptedException | ExecutionException e) {
+            // TODO: Handle exceptions better
+            logger.severe("Failed: " + e.getMessage());
         }
     }
 }

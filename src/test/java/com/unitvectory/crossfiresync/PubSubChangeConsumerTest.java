@@ -85,9 +85,6 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
 
             PubSubChangeConsumer pubSubChangeConsumer = spy(new PubSubChangeConsumer(db, context));
 
-            // Prevent the actual Firestore transaction from being performed
-            doNothing().when(pubSubChangeConsumer).updateTransaction(any(), any(), any());
-
             // Needing to capture the update argment to use as part of the test case output
             @SuppressWarnings("unchecked")
             ArgumentCaptor<Map<String, Object>> updateCaptor = ArgumentCaptor.forClass(Map.class);
