@@ -16,7 +16,6 @@ package com.unitvectory.crossfiresync;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.functions.CloudEventsFunction;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.events.cloud.firestore.v1.Document;
@@ -24,7 +23,6 @@ import com.google.events.cloud.firestore.v1.DocumentEventData;
 import com.google.events.cloud.firestore.v1.Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
-import com.google.pubsub.v1.ProjectTopicName;
 import com.google.pubsub.v1.PubsubMessage;
 
 import io.cloudevents.CloudEvent;
@@ -51,35 +49,26 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
 
     private final String database;
 
-    private final Publisher publisher;
-
     private final Firestore db;
 
+    private final Publisher publisher;
+
     public FirestoreChangePublisher() {
-        this(System.getenv("GOOGLE_CLOUD_PROJECT"), System.getenv("TOPIC"),
-                System.getenv("DATABASE"));
+        this(FirestoreChangeConfig.builder().build());
     }
 
-    public FirestoreChangePublisher(String project, String topic, String database) {
-        ProjectTopicName topicName = ProjectTopicName.of(project, topic);
+    public FirestoreChangePublisher(@NonNull FirestoreChangeConfig config) {
+        this.database = config.getDatabaseName();
+
+        this.db = config.getFirestoreFactory().getFirestore(ConfigFirestoreSettings.build(config));
 
         try {
-            publisher = Publisher.newBuilder(topicName).setEnableMessageOrdering(true).build();
+            this.publisher = config.getPublisherFactory()
+                    .getPublisher(ConfigPublisherSettings.build(config));
         } catch (IOException e) {
-            logger.severe("Failed to create publisher: " + e.getMessage());
+            logger.severe("Failed to create Publisher: " + e.getMessage());
             throw new RuntimeException(e);
         }
-
-        this.database = database;
-
-        this.db = FirestoreOptions.newBuilder().setDatabaseId(database).build().getService();
-    }
-
-    public FirestoreChangePublisher(@NonNull Publisher publisher, @NonNull Firestore db,
-            @NonNull String database) {
-        this.publisher = publisher;
-        this.db = db;
-        this.database = database;
     }
 
     @Override

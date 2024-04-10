@@ -44,9 +44,23 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
     protected FirestoreChangePublisherShouldReplicateTest() {
         super();
 
+        String databaseName = "test";
         Publisher publisher = Mockito.mock(Publisher.class);
         this.db = Mockito.mock(Firestore.class);
-        this.firestoreChangePublisher = new FirestoreChangePublisher(publisher, db, "test");
+        this.firestoreChangePublisher = new FirestoreChangePublisher(FirestoreChangeConfig.builder()
+                .databaseName(databaseName).firestoreFactory(new ConfigFirestoreFactory() {
+                    @Override
+                    public Firestore getFirestore(ConfigFirestoreSettings settings) {
+                        return db;
+                    }
+
+                }).publisherFactory(new ConfigPublisherFactory() {
+                    @Override
+                    public Publisher getPublisher(ConfigPublisherSettings settings) {
+                        return publisher;
+                    }
+
+                }).build());
     }
 
     @ParameterizedTest
@@ -68,7 +82,7 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
 
             if (firestoreEventData.hasOldValue()) {
                 Map<String, Object> oldValue =
-                        FirestoreDocumentConverter.convert(db, firestoreEventData.getOldValue());
+                        DocumentConverter.convert(db, firestoreEventData.getOldValue());
                 output.putPOJO("oldValue", oldValue);
             } else {
                 output.putNull("oldValue");
@@ -76,7 +90,7 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
 
             if (firestoreEventData.hasValue()) {
                 Map<String, Object> value =
-                        FirestoreDocumentConverter.convert(db, firestoreEventData.getValue());
+                        DocumentConverter.convert(db, firestoreEventData.getValue());
                 output.putPOJO("value", value);
             } else {
                 output.putNull("value");

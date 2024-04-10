@@ -83,7 +83,15 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
                 }
             });
 
-            PubSubChangeConsumer pubSubChangeConsumer = spy(new PubSubChangeConsumer(db, context));
+            PubSubChangeConsumer pubSubChangeConsumer =
+                    spy(new PubSubChangeConsumer(PubSubChangeConfig.builder().databaseName(context)
+                            .firestoreFactory(new ConfigFirestoreFactory() {
+                                @Override
+                                public Firestore getFirestore(ConfigFirestoreSettings settings) {
+                                    return db;
+                                }
+
+                            }).build()));
 
             // Needing to capture the update argment to use as part of the test case output
             @SuppressWarnings("unchecked")

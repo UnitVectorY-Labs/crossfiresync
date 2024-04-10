@@ -95,7 +95,20 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
             });
 
             FirestoreChangePublisher firestoreChangePublisher =
-                    spy(new FirestoreChangePublisher(publisher, db, context));
+                    spy(new FirestoreChangePublisher(FirestoreChangeConfig.builder()
+                            .databaseName(context).firestoreFactory(new ConfigFirestoreFactory() {
+                                @Override
+                                public Firestore getFirestore(ConfigFirestoreSettings settings) {
+                                    return db;
+                                }
+
+                            }).publisherFactory(new ConfigPublisherFactory() {
+                                @Override
+                                public Publisher getPublisher(ConfigPublisherSettings settings) {
+                                    return publisher;
+                                }
+
+                            }).build()));
 
             // Capture the delete document
             ArgumentCaptor<DocumentReference> deleteDocumentCaptor =

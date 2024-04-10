@@ -10,8 +10,18 @@ To replicate the data in a Firestore collection between different regions a Clou
 
 The aspiration of this application is to allow for full read and write access to the Firestore collections in each region having them replicated and consistent in all of the regions where replication is enabled.  However, the limitations of how Firestore and Pub/Sub work make it so that it is impossible to guarentee consistency between all of the region.
 
-In order to efficiently accomplish the replication some additional attributes must be added to the document.  These fields help control the replication of data between the regions.  An application using the documents **must not** write these attributes as that can adversely impact data consistency.  An application using the documents **should not** delete these attributes, but doing so will not impact replication as that is treated as a modification to the document resulting in the data being replicated.
+### Single Region Master
 
-- `crossfiresync:timestamp` 
+**Replication Mode:** `MULTI_REGION_MASTER`
+
+In single region master mode all writes must be directed to the master region.  Synchornization of all document changes can then be replicated to other regions.
+
+### Multi Region Master
+
+**Replication Mode:** `SINGLE_REGION_MASTER`
+
+In order to efficiently accomplish the replication with writes in multiple regions some additional attributes must be added to the document.  These fields help control the replication of data between the regions.  An application using the documents **must not** write these attributes as that can adversely impact data consistency.  An application using the documents **should not** delete these attributes, but doing so will not impact replication as that is treated as a modification to the document resulting in the data being replicated.
+
+- `crossfiresync:timestamp`
 - `crossfiresync:sourcedatabase`
 - `crossfiresync:delete`

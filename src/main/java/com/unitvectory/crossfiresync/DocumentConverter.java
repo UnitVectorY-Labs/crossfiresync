@@ -35,7 +35,7 @@ import lombok.experimental.UtilityClass;
  */
 @UtilityClass
 @SuppressWarnings("null")
-class FirestoreDocumentConverter {
+class DocumentConverter {
 
     /**
      * Convert the the Firestore Document from the change to a Map that can be used to set the

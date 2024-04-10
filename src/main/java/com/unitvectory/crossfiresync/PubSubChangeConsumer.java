@@ -18,7 +18,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.Transaction;
 import com.google.cloud.functions.CloudEventsFunction;
 import com.google.events.cloud.firestore.v1.Document;
@@ -52,18 +51,21 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
 
     private final Firestore db;
 
+    /**
+     * Create a new PubSubChangeConsumer.
+     */
     public PubSubChangeConsumer() {
-        this(System.getenv("DATABASE"));
+        this(PubSubChangeConfig.builder().build());
     }
 
-    public PubSubChangeConsumer(@NonNull String database) {
-        this.database = database;
-        this.db = FirestoreOptions.newBuilder().setDatabaseId(database).build().getService();
-    }
-
-    public PubSubChangeConsumer(@NonNull Firestore db, @NonNull String database) {
-        this.db = db;
-        this.database = database;
+    /**
+     * Create a new PubSubChangeConsumer.
+     * 
+     * @param config The configuration for the consumer
+     */
+    public PubSubChangeConsumer(@NonNull PubSubChangeConfig config) {
+        this.database = config.getDatabaseName();
+        this.db = config.getFirestoreFactory().getFirestore(ConfigFirestoreSettings.build(config));
     }
 
     @Override
@@ -115,7 +117,7 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
                 // Perform the update
 
                 Document document = firestoreEventData.getValue();
-                Map<String, Object> record = FirestoreDocumentConverter.convert(db, document);
+                Map<String, Object> record = DocumentConverter.convert(db, document);
 
                 Timestamp updatedTime = Timestamp.fromProto(document.getUpdateTime());
 
