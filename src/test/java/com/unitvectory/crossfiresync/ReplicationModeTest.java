@@ -13,41 +13,23 @@
  */
 package com.unitvectory.crossfiresync;
 
-import java.util.Map;
-
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 /**
- * The PubSubMessage class.
+ * The ReplicationMode test class.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-@Data
-@NoArgsConstructor
-class PubSubMessage {
+public class ReplicationModeTest {
 
-    private Map<String, String> attributes;
+    @Test
+    public void nullTest() {
+        assertEquals(ReplicationMode.NONE, ReplicationMode.parseDefaultNone(null));
+    }
 
-    private String data;
-
-    private String messageId;
-
-    private String orderingKey;
-
-    private String publishTime;
-
-    /**
-     * Gets the attribute value.
-     * 
-     * @param name the attribute name
-     * @return the attribute value
-     */
-    public String getAttribute(String name) {
-        if (this.attributes == null) {
-            return null;
-        }
-
-        return this.attributes.get(name);
+    @Test
+    public void invalidTest() {
+        assertEquals(ReplicationMode.NONE, ReplicationMode.parseDefaultNone("invalid"));
     }
 }

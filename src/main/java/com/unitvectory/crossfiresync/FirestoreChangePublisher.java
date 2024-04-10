@@ -107,8 +107,8 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
         }
 
         // Check to see if this is a delete
-        if (firestoreEventData.hasValue()
-                && firestoreEventData.getValue().containsFields(CrossFireSync.DELETE_FIELD)) {
+        if (firestoreEventData.hasValue() && firestoreEventData.getValue()
+                .containsFields(CrossFireSyncAttributes.DELETE_FIELD)) {
             // The delete field being present is the signal to delete the record in the
             // local region without publishing to the PubSub topic.
             DocumentReference documentReference = this.db.document(documentPath);
@@ -168,15 +168,15 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
                 Document document = firestoreEventData.getValue();
 
                 // Inserted without the database replication field, replicate it
-                Value sourceValue =
-                        document.getFieldsOrDefault(CrossFireSync.SOURCE_DATABASE_FIELD, null);
+                Value sourceValue = document
+                        .getFieldsOrDefault(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, null);
                 if (sourceValue == null || !sourceValue.hasStringValue()) {
                     return true;
                 }
 
                 // Inserted without the timestamp replication field, replicate it
                 Value timestampValue =
-                        document.getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD, null);
+                        document.getFieldsOrDefault(CrossFireSyncAttributes.TIMESTAMP_FIELD, null);
                 if (timestampValue == null || !timestampValue.hasTimestampValue()) {
                     return true;
                 }
@@ -190,7 +190,7 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
                 // There is no database replication field in the update, replicate it
                 // It definitely want a replicated record
                 Value newDatabase = firestoreEventData.getValue()
-                        .getFieldsOrDefault(CrossFireSync.SOURCE_DATABASE_FIELD, null);
+                        .getFieldsOrDefault(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, null);
                 if (newDatabase == null || !newDatabase.hasStringValue()) {
                     return true;
                 }
@@ -198,7 +198,7 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
                 // There is no new timestamp replication field in the update, replicate it
                 // It definitely want a replicated record
                 Value newTimestamp = firestoreEventData.getValue()
-                        .getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD, null);
+                        .getFieldsOrDefault(CrossFireSyncAttributes.TIMESTAMP_FIELD, null);
                 if (newTimestamp == null || !newTimestamp.hasTimestampValue()) {
                     return true;
                 }
@@ -206,7 +206,7 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
                 Timestamp newTs = newTimestamp.getTimestampValue();
 
                 Value oldTimestamp = firestoreEventData.getOldValue()
-                        .getFieldsOrDefault(CrossFireSync.TIMESTAMP_FIELD, null);
+                        .getFieldsOrDefault(CrossFireSyncAttributes.TIMESTAMP_FIELD, null);
                 Timestamp oldTs = null;
                 if (oldTimestamp == null || !oldTimestamp.hasTimestampValue()) {
                     // There is a new timestamp (previous check) but there was no old timestamp this
@@ -225,7 +225,8 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
 
             // Skip field that have the delete field set, these are not replicated to other
             // regions; only deleting in local region
-            return !firestoreEventData.getOldValue().containsFields(CrossFireSync.DELETE_FIELD);
+            return !firestoreEventData.getOldValue()
+                    .containsFields(CrossFireSyncAttributes.DELETE_FIELD);
         }
     }
 

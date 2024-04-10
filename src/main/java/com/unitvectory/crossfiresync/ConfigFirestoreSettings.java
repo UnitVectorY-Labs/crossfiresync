@@ -14,7 +14,6 @@
 package com.unitvectory.crossfiresync;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /**
@@ -26,13 +25,28 @@ import lombok.Value;
 @Builder
 public class ConfigFirestoreSettings {
 
+    /**
+     * The database name.
+     */
     private final String databaseName;
 
-    static ConfigFirestoreSettings build(@NonNull FirestoreChangeConfig config) {
+    /**
+     * Builds the Firestore settings from the Firestore change configuration.
+     * 
+     * @param config the Firestore change configuration
+     * @return the Firestore settings
+     */
+    static ConfigFirestoreSettings build(FirestoreChangeConfig config) {
         return ConfigFirestoreSettings.builder().databaseName(config.getDatabaseName()).build();
     }
 
-    static ConfigFirestoreSettings build(@NonNull PubSubChangeConfig config) {
+    /**
+     * Builds the Firestore settings from the PubSub change configuration.
+     * 
+     * @param config the PubSub change configuration
+     * @return the Firestore settings
+     */
+    static ConfigFirestoreSettings build(PubSubChangeConfig config) {
         return ConfigFirestoreSettings.builder().databaseName(config.getDatabaseName()).build();
     }
 }

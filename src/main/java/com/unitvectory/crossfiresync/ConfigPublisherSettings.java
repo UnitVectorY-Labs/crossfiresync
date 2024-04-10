@@ -14,7 +14,6 @@
 package com.unitvectory.crossfiresync;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /**
@@ -26,11 +25,23 @@ import lombok.Value;
 @Builder
 public class ConfigPublisherSettings {
 
+    /**
+     * The GCP project.
+     */
     private final String project;
 
+    /**
+     * The Pub/Sub topic.
+     */
     private final String topic;
 
-    static ConfigPublisherSettings build(@NonNull FirestoreChangeConfig config) {
+    /**
+     * Builds the publisher settings from the Firestore change configuration.
+     * 
+     * @param config the Firestore change configuration
+     * @return the publisher settings
+     */
+    static ConfigPublisherSettings build(FirestoreChangeConfig config) {
         return ConfigPublisherSettings.builder().project(config.getProject())
                 .topic(config.getTopic()).build();
     }

@@ -124,8 +124,8 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
                 // For cross region replication to work properly two additional attributes must
                 // be written to the document to indicate what region the replicated attribute
                 // came from and the timestamp of when the record was updated
-                record.put(CrossFireSync.TIMESTAMP_FIELD, updatedTime);
-                record.put(CrossFireSync.SOURCE_DATABASE_FIELD, pubsubDatabase);
+                record.put(CrossFireSyncAttributes.TIMESTAMP_FIELD, updatedTime);
+                record.put(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, pubsubDatabase);
 
                 // Perform the update
                 this.updateTransaction(documentReference, updatedTime, record);
@@ -141,9 +141,9 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
                 // Prepare the updates, set the deleted flag instead of actually deleting so the
                 // delete in the remote regions will not redundantly cascade to other regions.
                 Map<String, Object> updates = new HashMap<>();
-                updates.put(CrossFireSync.TIMESTAMP_FIELD, deleteTimestamp);
-                updates.put(CrossFireSync.DELETE_FIELD, true);
-                updates.put(CrossFireSync.SOURCE_DATABASE_FIELD, pubsubDatabase);
+                updates.put(CrossFireSyncAttributes.TIMESTAMP_FIELD, deleteTimestamp);
+                updates.put(CrossFireSyncAttributes.DELETE_FIELD, true);
+                updates.put(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, pubsubDatabase);
 
                 boolean flagged = this.deleteFlagTransaction(documentReference, updates);
 
@@ -159,6 +159,15 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
         logger.info("Pub/Sub message: " + event);
     }
 
+    /**
+     * Update a Firestore document with a transaction.
+     * 
+     * @param documentReference The document reference
+     * @param updatedTime The updated time
+     * @param record The record to update
+     * @throws InterruptedException If the transaction is interrupted
+     * @throws ExecutionException If the transaction fails
+     */
     void updateTransaction(DocumentReference documentReference, Timestamp updatedTime,
             Map<String, Object> record) throws InterruptedException, ExecutionException {
         ApiFuture<Void> transaction = db.runTransaction((Transaction.Function<Void>) t -> {
@@ -171,9 +180,10 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
                 shouldWrite = true;
             } else {
                 // Check if the timestamp is older or not present
-                Timestamp existingTimestamp = snapshot.contains(CrossFireSync.TIMESTAMP_FIELD)
-                        ? snapshot.getTimestamp(CrossFireSync.TIMESTAMP_FIELD)
-                        : null;
+                Timestamp existingTimestamp =
+                        snapshot.contains(CrossFireSyncAttributes.TIMESTAMP_FIELD)
+                                ? snapshot.getTimestamp(CrossFireSyncAttributes.TIMESTAMP_FIELD)
+                                : null;
                 if (existingTimestamp == null || updatedTime.compareTo(existingTimestamp) > 0) {
                     shouldWrite = true;
                 }
@@ -191,6 +201,15 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
         transaction.get();
     }
 
+    /**
+     * Flag a Firestore document for deletion with a transaction.
+     * 
+     * @param documentReference The document reference
+     * @param updates The updates to apply
+     * @return True if the document was flagged for deletion
+     * @throws InterruptedException If the transaction is interrupted
+     * @throws ExecutionException If the transaction fails
+     */
     boolean deleteFlagTransaction(DocumentReference documentReference, Map<String, Object> updates)
             throws InterruptedException, ExecutionException {
         ApiFuture<Boolean> transaction = db.runTransaction((Transaction.Function<Boolean>) t -> {

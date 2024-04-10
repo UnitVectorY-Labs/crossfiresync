@@ -26,7 +26,6 @@ class ConfigPublisherFactoryDefault implements ConfigPublisherFactory {
 
     @Override
     public Publisher getPublisher(ConfigPublisherSettings settings) throws IOException {
-
         ProjectTopicName topicName =
                 ProjectTopicName.of(settings.getProject(), settings.getTopic());
         return Publisher.newBuilder(topicName).setEnableMessageOrdering(true).build();

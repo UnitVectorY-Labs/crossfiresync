@@ -16,12 +16,12 @@ package com.unitvectory.crossfiresync;
 import lombok.experimental.UtilityClass;
 
 /**
- * The CrossFireSync class.
+ * The CrossFireSyncAttributes class.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
 @UtilityClass
-class CrossFireSync {
+class CrossFireSyncAttributes {
 
     /**
      * Name of the timestamp attribute

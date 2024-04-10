@@ -44,6 +44,4 @@ public class PubSubChangeConfig {
     @Builder.Default
     private final ConfigFirestoreFactory firestoreFactory = new ConfigFirestoreFactoryDefault();
 
-
-
 }
