@@ -13,12 +13,8 @@
  */
 package com.unitvectory.crossfiresync;
 
-import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Transaction;
 import com.google.cloud.functions.CloudEventsFunction;
 import com.google.events.cloud.firestore.v1.Document;
 import com.google.events.cloud.firestore.v1.DocumentEventData;
@@ -49,7 +45,7 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
 
     private final String database;
 
-    private final Firestore db;
+    private final CrossFireSyncFirestore firestore;
 
     /**
      * Create a new PubSubChangeConsumer.
@@ -65,7 +61,8 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
      */
     public PubSubChangeConsumer(@NonNull PubSubChangeConfig config) {
         this.database = config.getDatabaseName();
-        this.db = config.getFirestoreFactory().getFirestore(ConfigFirestoreSettings.build(config));
+        this.firestore =
+                config.getFirestoreFactory().getFirestore(ConfigFirestoreSettings.build(config));
     }
 
     @Override
@@ -111,13 +108,13 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
             return;
         }
 
-        DocumentReference documentReference = this.db.document(documentPath);
+        DocumentReference documentReference = this.firestore.getDocument(documentPath);
         try {
             if (firestoreEventData.hasValue()) {
                 // Perform the update
 
                 Document document = firestoreEventData.getValue();
-                Map<String, Object> record = DocumentConverter.convert(db, document);
+                Map<String, Object> record = DocumentConverter.convert(firestore, document);
 
                 Timestamp updatedTime = Timestamp.fromProto(document.getUpdateTime());
 
@@ -128,7 +125,7 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
                 record.put(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, pubsubDatabase);
 
                 // Perform the update
-                this.updateTransaction(documentReference, updatedTime, record);
+                this.firestore.updateTransaction(documentReference, updatedTime, record);
 
                 // documentReference.set().get();
                 logger.info("Document set: " + documentPath);
@@ -136,7 +133,7 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
                 // Flag as delete
 
                 // TODO: This should be the timestamp of the delete not the current time
-                Timestamp deleteTimestamp = Timestamp.now();
+                Timestamp deleteTimestamp = this.firestore.now();
 
                 // Prepare the updates, set the deleted flag instead of actually deleting so the
                 // delete in the remote regions will not redundantly cascade to other regions.
@@ -145,7 +142,7 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
                 updates.put(CrossFireSyncAttributes.DELETE_FIELD, true);
                 updates.put(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, pubsubDatabase);
 
-                boolean flagged = this.deleteFlagTransaction(documentReference, updates);
+                boolean flagged = this.firestore.deleteFlagTransaction(documentReference, updates);
 
                 if (flagged) {
                     logger.info("Document deleted: " + documentPath);
@@ -159,73 +156,4 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
         logger.info("Pub/Sub message: " + event);
     }
 
-    /**
-     * Update a Firestore document with a transaction.
-     * 
-     * @param documentReference The document reference
-     * @param updatedTime The updated time
-     * @param record The record to update
-     * @throws InterruptedException If the transaction is interrupted
-     * @throws ExecutionException If the transaction fails
-     */
-    void updateTransaction(DocumentReference documentReference, Timestamp updatedTime,
-            Map<String, Object> record) throws InterruptedException, ExecutionException {
-        ApiFuture<Void> transaction = db.runTransaction((Transaction.Function<Void>) t -> {
-            // Attempt to retrieve the existing document
-            DocumentSnapshot snapshot = t.get(documentReference).get();
-
-            boolean shouldWrite = false;
-            if (!snapshot.exists()) {
-                // Document does not exist
-                shouldWrite = true;
-            } else {
-                // Check if the timestamp is older or not present
-                Timestamp existingTimestamp =
-                        snapshot.contains(CrossFireSyncAttributes.TIMESTAMP_FIELD)
-                                ? snapshot.getTimestamp(CrossFireSyncAttributes.TIMESTAMP_FIELD)
-                                : null;
-                if (existingTimestamp == null || updatedTime.compareTo(existingTimestamp) > 0) {
-                    shouldWrite = true;
-                }
-            }
-
-            // If conditions are met, proceed to write
-            if (shouldWrite) {
-                t.set(documentReference, record);
-            }
-
-            return null; // Transaction must return null if void
-        });
-
-        // Wait for the transaction to complete
-        transaction.get();
-    }
-
-    /**
-     * Flag a Firestore document for deletion with a transaction.
-     * 
-     * @param documentReference The document reference
-     * @param updates The updates to apply
-     * @return True if the document was flagged for deletion
-     * @throws InterruptedException If the transaction is interrupted
-     * @throws ExecutionException If the transaction fails
-     */
-    boolean deleteFlagTransaction(DocumentReference documentReference, Map<String, Object> updates)
-            throws InterruptedException, ExecutionException {
-        ApiFuture<Boolean> transaction = db.runTransaction((Transaction.Function<Boolean>) t -> {
-            // Attempt to retrieve the existing document
-            DocumentSnapshot snapshot = t.get(documentReference).get();
-
-            // If the document exists flag it for delete
-            if (snapshot.exists()) {
-                t.update(documentReference, updates);
-                return true;
-            } else {
-                return false;
-            }
-        });
-
-        // Wait for the transaction to complete
-        return transaction.get();
-    }
 }

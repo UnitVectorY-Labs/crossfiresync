@@ -32,8 +32,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.Firestore;
 import com.unitvectory.fileparamunit.ListFileSource;
 import com.unitvectory.jsonparamunit.JsonNodeParamUnit;
 import com.unitvectory.jsonparamunit.JsonParamUnitConfig;
@@ -65,9 +65,22 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
     @Override
     protected JsonNode process(JsonNode input, String context) {
         try {
-            Firestore db = Mockito.mock(Firestore.class);
 
-            when(db.document(anyString())).thenAnswer(new Answer<DocumentReference>() {
+            CrossFireSyncFirestore firestore = Mockito.mock(CrossFireSyncFirestore.class);
+
+            // Needing to capture the update argment to use as part of the test case output
+            @SuppressWarnings("unchecked")
+            ArgumentCaptor<Map<String, Object>> updateCaptor = ArgumentCaptor.forClass(Map.class);
+
+            doNothing().when(firestore).updateTransaction(any(), any(), updateCaptor.capture());
+
+            // Needing to capture the update argment to use as part of the test case output
+            @SuppressWarnings("unchecked")
+            ArgumentCaptor<Map<String, Object>> deleteCaptor = ArgumentCaptor.forClass(Map.class);
+
+            when(firestore.deleteFlagTransaction(any(), deleteCaptor.capture())).thenReturn(true);
+
+            when(firestore.getDocument(anyString())).thenAnswer(new Answer<DocumentReference>() {
                 @Override
                 public DocumentReference answer(InvocationOnMock invocation) throws Throwable {
                     // Capture the input string
@@ -83,22 +96,26 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
                 }
             });
 
+            when(firestore.now()).thenAnswer(new Answer<Timestamp>() {
+                @Override
+                public Timestamp answer(InvocationOnMock invocation) throws Throwable {
+                    JsonNode now = input.get("now");
+                    return Timestamp.ofTimeSecondsAndNanos(now.get("seconds").longValue(),
+                            now.get("nanos").intValue());
+                }
+            });
+
             PubSubChangeConsumer pubSubChangeConsumer =
                     spy(new PubSubChangeConsumer(PubSubChangeConfig.builder().databaseName(context)
                             .firestoreFactory(new ConfigFirestoreFactory() {
                                 @Override
-                                public Firestore getFirestore(ConfigFirestoreSettings settings) {
-                                    return db;
+                                public CrossFireSyncFirestore getFirestore(
+                                        ConfigFirestoreSettings settings) {
+                                    return firestore;
                                 }
 
                             }).build()));
 
-            // Needing to capture the update argment to use as part of the test case output
-            @SuppressWarnings("unchecked")
-            ArgumentCaptor<Map<String, Object>> updateCaptor = ArgumentCaptor.forClass(Map.class);
-
-            doNothing().when(pubSubChangeConsumer).updateTransaction(any(), any(),
-                    updateCaptor.capture());
 
             byte[] inputBytes = mapper.writeValueAsString(input).getBytes();
 
@@ -116,6 +133,13 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
                 output.putPOJO("update", update);
             } catch (MockitoException e) {
                 // If there is no update method called
+            }
+
+            try {
+                Map<String, Object> delete = deleteCaptor.getValue();
+                output.putPOJO("delete", delete);
+            } catch (MockitoException e) {
+                // If there is no delete method called
             }
 
             return output;

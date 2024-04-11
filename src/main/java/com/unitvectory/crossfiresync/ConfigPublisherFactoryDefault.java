@@ -25,9 +25,10 @@ import com.google.pubsub.v1.ProjectTopicName;
 class ConfigPublisherFactoryDefault implements ConfigPublisherFactory {
 
     @Override
-    public Publisher getPublisher(ConfigPublisherSettings settings) throws IOException {
+    public CrossFireSyncPublish getPublisher(ConfigPublisherSettings settings) throws IOException {
         ProjectTopicName topicName =
                 ProjectTopicName.of(settings.getProject(), settings.getTopic());
-        return Publisher.newBuilder(topicName).setEnableMessageOrdering(true).build();
+        Publisher publish = Publisher.newBuilder(topicName).setEnableMessageOrdering(true).build();
+        return new CrossFireSyncPublishDefault(publish);
     }
 }

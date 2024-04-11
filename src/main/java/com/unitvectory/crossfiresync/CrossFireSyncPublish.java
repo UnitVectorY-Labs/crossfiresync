@@ -13,18 +13,19 @@
  */
 package com.unitvectory.crossfiresync;
 
-import com.google.cloud.firestore.FirestoreOptions;
+import com.google.pubsub.v1.PubsubMessage;
 
 /**
- * The factory for the Firestore configuration.
+ * The CrossFireSyncPublish interface
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-class ConfigFirestoreFactoryDefault implements ConfigFirestoreFactory {
+public interface CrossFireSyncPublish {
 
-    @Override
-    public CrossFireSyncFirestore getFirestore(ConfigFirestoreSettings settings) {
-        return new CrossFireSyncFirestoreDefault(FirestoreOptions.newBuilder()
-                .setDatabaseId(settings.getDatabaseName()).build().getService());
-    }
+    /**
+     * Publish the message to Pub/Sub
+     * 
+     * @param message the message
+     */
+    void publishMessage(PubsubMessage message);
 }

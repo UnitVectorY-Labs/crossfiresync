@@ -14,7 +14,6 @@
 package com.unitvectory.crossfiresync;
 
 import java.io.IOException;
-import com.google.cloud.pubsub.v1.Publisher;
 
 /**
  * The factory for the Publisher configuration.
@@ -27,8 +26,8 @@ public interface ConfigPublisherFactory {
      * Gets the Publisher configuration.
      * 
      * @param settings the Publisher settings
-     * @return the Publisher configuration
+     * @return the publish implementation
      * @throws IOException if there is an error creating the Publisher
      */
-    Publisher getPublisher(ConfigPublisherSettings settings) throws IOException;
+    CrossFireSyncPublish getPublisher(ConfigPublisherSettings settings) throws IOException;
 }

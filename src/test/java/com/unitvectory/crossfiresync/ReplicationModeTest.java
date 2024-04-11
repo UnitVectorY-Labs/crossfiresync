@@ -32,4 +32,16 @@ public class ReplicationModeTest {
     public void invalidTest() {
         assertEquals(ReplicationMode.NONE, ReplicationMode.parseDefaultNone("invalid"));
     }
+
+    @Test
+    public void singleRegionMasterTest() {
+        assertEquals(ReplicationMode.SINGLE_REGION_MASTER,
+                ReplicationMode.parseDefaultNone("SINGLE_REGION_MASTER"));
+    }
+
+    @Test
+    public void multiRegionMasterTest() {
+        assertEquals(ReplicationMode.MULTI_REGION_MASTER,
+                ReplicationMode.parseDefaultNone("MULTI_REGION_MASTER"));
+    }
 }

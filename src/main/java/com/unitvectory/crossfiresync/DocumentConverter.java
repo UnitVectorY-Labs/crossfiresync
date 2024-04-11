@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.GeoPoint;
 import com.google.events.cloud.firestore.v1.Document;
 import com.google.events.cloud.firestore.v1.Value;
@@ -41,22 +40,23 @@ class DocumentConverter {
      * Convert the the Firestore Document from the change to a Map that can be used to set the
      * record in the other regions.
      * 
-     * @param db the Firestore database needed to create reference objects
+     * @param firestore the Firestore database needed to create reference objects
      * @param document the document
      * @return the map representation of the document
      */
-    public static Map<String, Object> convert(Firestore db, Document document) {
-        return convertMap(db, document.getFieldsMap());
+    public static Map<String, Object> convert(CrossFireSyncFirestore firestore, Document document) {
+        return convertMap(firestore, document.getFieldsMap());
     }
 
     /**
      * Convert the document to the object representation
      * 
-     * @param db the Firestore database needed to create reference objects
+     * @param firestore the Firestore database needed to create reference objects
      * @param document the document
      * @return the map representation of the document
      */
-    private static Map<String, Object> convertMap(Firestore db, Map<String, Value> document) {
+    private static Map<String, Object> convertMap(CrossFireSyncFirestore firestore,
+            Map<String, Value> document) {
         Map<String, Object> map = new HashMap<>();
 
         for (Entry<String, Value> entry : document.entrySet()) {
@@ -65,7 +65,7 @@ class DocumentConverter {
 
             switch (value.getValueTypeCase()) {
                 case ARRAY_VALUE:
-                    map.put(key, convertArray(db, value.getArrayValue().getValuesList()));
+                    map.put(key, convertArray(firestore, value.getArrayValue().getValuesList()));
                     break;
                 case BOOLEAN_VALUE:
                     map.put(key, value.getBooleanValue());
@@ -83,13 +83,13 @@ class DocumentConverter {
                     map.put(key, value.getIntegerValue());
                     break;
                 case MAP_VALUE:
-                    map.put(key, convertMap(db, value.getMapValue().getFieldsMap()));
+                    map.put(key, convertMap(firestore, value.getMapValue().getFieldsMap()));
                     break;
                 case NULL_VALUE:
                     map.put(key, null);
                     break;
                 case REFERENCE_VALUE:
-                    map.put(key, db.document(
+                    map.put(key, firestore.getDocument(
                             DocumentResourceNameUtil.getDocumentPath(value.getReferenceValue())));
                     break;
                 case STRING_VALUE:
@@ -113,17 +113,18 @@ class DocumentConverter {
     /**
      * Convert the object to the array representation
      * 
-     * @param db the Firestore database needed to create reference objects
+     * @param firestore the Firestore database needed to create reference objects
      * @param document the document
      * @return the array representation of the document
      */
-    private static List<Object> convertArray(Firestore db, List<Value> document) {
+    private static List<Object> convertArray(CrossFireSyncFirestore firestore,
+            List<Value> document) {
         List<Object> list = new ArrayList<>();
         for (Value value : document) {
 
             switch (value.getValueTypeCase()) {
                 case ARRAY_VALUE:
-                    list.add(convertArray(db, value.getArrayValue().getValuesList()));
+                    list.add(convertArray(firestore, value.getArrayValue().getValuesList()));
                     break;
                 case BOOLEAN_VALUE:
                     list.add(value.getBooleanValue());
@@ -141,13 +142,13 @@ class DocumentConverter {
                     list.add(value.getIntegerValue());
                     break;
                 case MAP_VALUE:
-                    list.add(convertMap(db, value.getMapValue().getFieldsMap()));
+                    list.add(convertMap(firestore, value.getMapValue().getFieldsMap()));
                     break;
                 case NULL_VALUE:
                     list.add(null);
                     break;
                 case REFERENCE_VALUE:
-                    list.add(db.document(
+                    list.add(firestore.getDocument(
                             DocumentResourceNameUtil.getDocumentPath(value.getReferenceValue())));
                     break;
                 case STRING_VALUE:

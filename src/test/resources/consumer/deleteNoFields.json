@@ -1,0 +1,26 @@
+{
+    "input": {
+        "message": {
+            "data": "EokBClhwcm9qZWN0cy9maXJlc3RvcmVwcm90bzJqc29uL2RhdGFiYXNlcy8oZGVmYXVsdCkvZG9jdW1lbnRzL3Rlc3RkYXRhLzA3NFNTeERTenRYdDl2RnQxcnFyEhIKDGJvb2xlYW5GaWVsZBICCAAaDAipgPCuBhCY87faASILCPCG9a4GEJicjHU=",
+            "orderingKey": "test/complexDocument",
+            "attributes": {
+                "database": "west"
+            }
+        },
+        "now": {
+            "seconds": 1712791341,
+            "nanos": 234000000
+        }
+    },
+    "context": "east4",
+    "output": {
+        "delete": {
+            "crossfiresync:sourcedatabase": "west",
+            "crossfiresync:timestamp": {
+                "seconds": 1712791341,
+                "nanos": 234000000
+            },
+            "crossfiresync:delete": true
+        }
+    }
+}

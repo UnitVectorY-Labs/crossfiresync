@@ -13,11 +13,7 @@
  */
 package com.unitvectory.crossfiresync;
 
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.Firestore;
 import com.google.cloud.functions.CloudEventsFunction;
-import com.google.cloud.pubsub.v1.Publisher;
 import com.google.events.cloud.firestore.v1.Document;
 import com.google.events.cloud.firestore.v1.DocumentEventData;
 import com.google.events.cloud.firestore.v1.Value;
@@ -33,7 +29,6 @@ import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 /**
@@ -49,9 +44,9 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
 
     private final String database;
 
-    private final Firestore db;
+    private final CrossFireSyncFirestore firestore;
 
-    private final Publisher publisher;
+    private final CrossFireSyncPublish publisher;
 
     public FirestoreChangePublisher() {
         this(FirestoreChangeConfig.builder().build());
@@ -60,7 +55,8 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
     public FirestoreChangePublisher(@NonNull FirestoreChangeConfig config) {
         this.database = config.getDatabaseName();
 
-        this.db = config.getFirestoreFactory().getFirestore(ConfigFirestoreSettings.build(config));
+        this.firestore =
+                config.getFirestoreFactory().getFirestore(ConfigFirestoreSettings.build(config));
 
         try {
             this.publisher = config.getPublisherFactory()
@@ -111,8 +107,7 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
                 .containsFields(CrossFireSyncAttributes.DELETE_FIELD)) {
             // The delete field being present is the signal to delete the record in the
             // local region without publishing to the PubSub topic.
-            DocumentReference documentReference = this.db.document(documentPath);
-            deleteDocument(documentReference);
+            this.firestore.deleteDocument(documentPath);
             return;
         }
 
@@ -132,26 +127,7 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
                 .putAllAttributes(attributes).build();
 
         // Publish the message
-        publishMessage(pubsubMessage);
-    }
-
-    /**
-     * Publish the message to Pub/Sub
-     * 
-     * @param message the message
-     */
-    private void publishMessage(PubsubMessage message) {
-        try {
-            ApiFuture<String> future = publisher.publish(message);
-            publisher.publishAllOutstanding();
-            String messageId = future.get();
-
-            // Wait on the future to ensure message is sent
-            logger.fine("Published message ID: " + messageId);
-        } catch (InterruptedException | ExecutionException e) {
-            logger.severe("Failed to publish to Pub/Sub: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
+        this.publisher.publishMessage(pubsubMessage);
     }
 
     /**
@@ -227,23 +203,6 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
             // regions; only deleting in local region
             return !firestoreEventData.getOldValue()
                     .containsFields(CrossFireSyncAttributes.DELETE_FIELD);
-        }
-    }
-
-    /**
-     * Deletes the actual document, used for two phase deletes after a document is flagged for
-     * deletion.
-     * 
-     * @param documentReference the document reference
-     */
-    void deleteDocument(DocumentReference documentReference) {
-        try {
-            documentReference.delete().get();
-            logger.info("Deleted: "
-                    + DocumentResourceNameUtil.getDocumentPath(documentReference.getId()));
-        } catch (InterruptedException | ExecutionException e) {
-            // TODO: Handle exceptions better
-            logger.severe("Failed: " + e.getMessage());
         }
     }
 }

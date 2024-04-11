@@ -13,7 +13,6 @@
  */
 package com.unitvectory.crossfiresync;
 
-import com.google.cloud.firestore.Firestore;
 
 /**
  * The factory for the Firestore configuration.
@@ -25,8 +24,8 @@ public interface ConfigFirestoreFactory {
     /**
      * Gets the Firestore configuration.
      * 
-     * @param settings the Firestore settings
-     * @return the Firestore configuration
+     * @param settings the Firestore
+     * @return the Firestore implementation
      */
-    Firestore getFirestore(ConfigFirestoreSettings settings);
+    CrossFireSyncFirestore getFirestore(ConfigFirestoreSettings settings);
 }

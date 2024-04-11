@@ -37,7 +37,7 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private Firestore db;
+    private CrossFireSyncFirestore firestore;
 
     private FirestoreChangePublisher firestoreChangePublisher;
 
@@ -46,18 +46,19 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
 
         String databaseName = "test";
         Publisher publisher = Mockito.mock(Publisher.class);
-        this.db = Mockito.mock(Firestore.class);
+        Firestore db = Mockito.mock(Firestore.class);
+        this.firestore = new CrossFireSyncFirestoreDefault(db);
         this.firestoreChangePublisher = new FirestoreChangePublisher(FirestoreChangeConfig.builder()
                 .databaseName(databaseName).firestoreFactory(new ConfigFirestoreFactory() {
                     @Override
-                    public Firestore getFirestore(ConfigFirestoreSettings settings) {
-                        return db;
+                    public CrossFireSyncFirestore getFirestore(ConfigFirestoreSettings settings) {
+                        return firestore;
                     }
 
                 }).publisherFactory(new ConfigPublisherFactory() {
                     @Override
-                    public Publisher getPublisher(ConfigPublisherSettings settings) {
-                        return publisher;
+                    public CrossFireSyncPublish getPublisher(ConfigPublisherSettings settings) {
+                        return new CrossFireSyncPublishDefault(publisher);
                     }
 
                 }).build());
@@ -82,7 +83,7 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
 
             if (firestoreEventData.hasOldValue()) {
                 Map<String, Object> oldValue =
-                        DocumentConverter.convert(db, firestoreEventData.getOldValue());
+                        DocumentConverter.convert(firestore, firestoreEventData.getOldValue());
                 output.putPOJO("oldValue", oldValue);
             } else {
                 output.putNull("oldValue");
@@ -90,7 +91,7 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
 
             if (firestoreEventData.hasValue()) {
                 Map<String, Object> value =
-                        DocumentConverter.convert(db, firestoreEventData.getValue());
+                        DocumentConverter.convert(firestore, firestoreEventData.getValue());
                 output.putPOJO("value", value);
             } else {
                 output.putNull("value");

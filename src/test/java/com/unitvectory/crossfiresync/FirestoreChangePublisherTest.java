@@ -68,6 +68,8 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
         try {
             Publisher publisher = Mockito.mock(Publisher.class);
 
+            CrossFireSyncPublish publish = spy(new CrossFireSyncPublishDefault(publisher));
+
             @SuppressWarnings("unchecked")
             ApiFuture<String> apiFuture = Mockito.mock(ApiFuture.class);
             when(apiFuture.get()).thenReturn("id");
@@ -77,6 +79,7 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
             when(publisher.publish(pubsubCaptor.capture())).thenReturn(apiFuture);
 
             Firestore db = Mockito.mock(Firestore.class);
+            CrossFireSyncFirestoreDefault firestore = spy(new CrossFireSyncFirestoreDefault(db));
 
             when(db.document(anyString())).thenAnswer(new Answer<DocumentReference>() {
                 @Override
@@ -98,24 +101,24 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
                     spy(new FirestoreChangePublisher(FirestoreChangeConfig.builder()
                             .databaseName(context).firestoreFactory(new ConfigFirestoreFactory() {
                                 @Override
-                                public Firestore getFirestore(ConfigFirestoreSettings settings) {
-                                    return db;
+                                public CrossFireSyncFirestoreDefault getFirestore(
+                                        ConfigFirestoreSettings settings) {
+                                    return firestore;
                                 }
 
                             }).publisherFactory(new ConfigPublisherFactory() {
                                 @Override
-                                public Publisher getPublisher(ConfigPublisherSettings settings) {
-                                    return publisher;
+                                public CrossFireSyncPublish getPublisher(
+                                        ConfigPublisherSettings settings) {
+                                    return publish;
                                 }
 
                             }).build()));
 
             // Capture the delete document
-            ArgumentCaptor<DocumentReference> deleteDocumentCaptor =
-                    ArgumentCaptor.forClass(DocumentReference.class);
+            ArgumentCaptor<String> deleteDocumentCaptor = ArgumentCaptor.forClass(String.class);
 
-            doNothing().when(firestoreChangePublisher)
-                    .deleteDocument(deleteDocumentCaptor.capture());
+            doNothing().when(firestore).deleteDocument(deleteDocumentCaptor.capture());
 
             byte[] inputBytes = Base64.getDecoder().decode(input.asText());
 
@@ -131,29 +134,29 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
             try {
                 PubsubMessage pubsubMessage = pubsubCaptor.getValue();
 
-                ObjectNode publish = mapper.createObjectNode();
+                ObjectNode publishNode = mapper.createObjectNode();
 
-                publish.put("data",
+                publishNode.put("data",
                         Base64.getEncoder().encodeToString(pubsubMessage.getData().toByteArray()));
 
-                publish.put("orderingKey", pubsubMessage.getOrderingKey());
+                publishNode.put("orderingKey", pubsubMessage.getOrderingKey());
 
                 ObjectNode attributes = mapper.createObjectNode();
                 for (Entry<String, String> att : pubsubMessage.getAttributesMap().entrySet()) {
                     attributes.put(att.getKey(), att.getValue());
                 }
 
-                publish.set("attributes", attributes);
+                publishNode.set("attributes", attributes);
 
-                output.set("publish", publish);
+                output.set("publish", publishNode);
 
             } catch (MockitoException e) {
                 // If there is no publish method
             }
 
             try {
-                DocumentReference deleteDocument = deleteDocumentCaptor.getValue();
-                output.put("deleteDocument", deleteDocument.getId());
+                String deleteDocument = deleteDocumentCaptor.getValue();
+                output.put("deleteDocument", deleteDocument);
             } catch (MockitoException e) {
                 // If there is no update method called
             }
