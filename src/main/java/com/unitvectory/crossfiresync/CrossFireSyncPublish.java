@@ -26,6 +26,7 @@ public interface CrossFireSyncPublish {
      * Publish the message to Pub/Sub
      * 
      * @param message the message
+     * @return the message ID
      */
-    void publishMessage(PubsubMessage message);
+    String publishMessage(PubsubMessage message);
 }

@@ -38,7 +38,7 @@ class CrossFireSyncPublishDefault implements CrossFireSyncPublish {
      * 
      * @param message the message
      */
-    public void publishMessage(PubsubMessage message) {
+    public String publishMessage(PubsubMessage message) {
         try {
             ApiFuture<String> future = publisher.publish(message);
             publisher.publishAllOutstanding();
@@ -46,7 +46,8 @@ class CrossFireSyncPublishDefault implements CrossFireSyncPublish {
 
             // Wait on the future to ensure message is sent
             logger.fine("Published message ID: " + messageId);
-        } catch (InterruptedException | ExecutionException e) {
+            return messageId;
+        } catch (Exception e) {
             logger.severe("Failed to publish to Pub/Sub: " + e.getMessage());
             throw new RuntimeException(e);
         }
