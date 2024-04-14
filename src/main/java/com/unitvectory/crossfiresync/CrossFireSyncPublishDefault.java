@@ -13,7 +13,6 @@
  */
 package com.unitvectory.crossfiresync;
 
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.pubsub.v1.Publisher;
@@ -38,6 +37,7 @@ class CrossFireSyncPublishDefault implements CrossFireSyncPublish {
      * 
      * @param message the message
      */
+    @Override
     public String publishMessage(PubsubMessage message) {
         try {
             ApiFuture<String> future = publisher.publish(message);

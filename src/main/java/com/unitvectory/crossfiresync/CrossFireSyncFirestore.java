@@ -17,13 +17,14 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentReference;
+import com.unitvectory.firestoreproto2map.ValueToDocumentReferenceMapper;
 
 /**
  * The CrossFireSyncFirestore interface
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public interface CrossFireSyncFirestore {
+public interface CrossFireSyncFirestore extends ValueToDocumentReferenceMapper {
 
     /**
      * Gets the current time
@@ -70,4 +71,8 @@ public interface CrossFireSyncFirestore {
      * @param documentPath the document to delete
      */
     void deleteDocument(String documentPath);
+
+    default DocumentReference convert(String referenceValue, String documentPath) {
+        return getDocument(documentPath);
+    }
 }

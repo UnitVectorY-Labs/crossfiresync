@@ -18,7 +18,6 @@ import java.util.Map;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mockito;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -26,6 +25,7 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.events.cloud.firestore.v1.DocumentEventData;
 import com.unitvectory.fileparamunit.ListFileSource;
+import com.unitvectory.firestoreproto2map.FirestoreProto2Map;
 import com.unitvectory.jsonparamunit.JsonNodeParamUnit;
 
 /**
@@ -40,6 +40,8 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
     private CrossFireSyncFirestore firestore;
 
     private FirestoreChangePublisher firestoreChangePublisher;
+
+    private final FirestoreProto2Map firestoreProto2Map;
 
     protected FirestoreChangePublisherShouldReplicateTest() {
         super();
@@ -62,6 +64,7 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
                     }
 
                 }).build());
+        this.firestoreProto2Map = new FirestoreProto2Map(this.firestore);
     }
 
     @ParameterizedTest
@@ -83,7 +86,7 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
 
             if (firestoreEventData.hasOldValue()) {
                 Map<String, Object> oldValue =
-                        DocumentConverter.convert(firestore, firestoreEventData.getOldValue());
+                        this.firestoreProto2Map.convert(firestoreEventData.getOldValue());
                 output.putPOJO("oldValue", oldValue);
             } else {
                 output.putNull("oldValue");
@@ -91,7 +94,7 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
 
             if (firestoreEventData.hasValue()) {
                 Map<String, Object> value =
-                        DocumentConverter.convert(firestore, firestoreEventData.getValue());
+                        this.firestoreProto2Map.convert(firestoreEventData.getValue());
                 output.putPOJO("value", value);
             } else {
                 output.putNull("value");

@@ -96,6 +96,26 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
                 }
             });
 
+            when(firestore.convert(anyString(), anyString()))
+                    .thenAnswer(new Answer<DocumentReference>() {
+
+                        @Override
+                        public DocumentReference answer(InvocationOnMock invocation)
+                                throws Throwable {
+                            // Capture the input string
+                            String inputString = invocation.getArgument(1);
+
+                            // Mock DocumentReference
+                            DocumentReference mockDocumentRef =
+                                    Mockito.mock(DocumentReference.class);
+                            // Configure mock to return the input string as ID
+                            when(mockDocumentRef.getId()).thenReturn("projects/example/databases/"
+                                    + context + "/documents/" + inputString);
+
+                            return mockDocumentRef;
+                        }
+                    });
+
             when(firestore.now()).thenAnswer(new Answer<Timestamp>() {
                 @Override
                 public Timestamp answer(InvocationOnMock invocation) throws Throwable {

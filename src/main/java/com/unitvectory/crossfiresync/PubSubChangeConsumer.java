@@ -20,7 +20,7 @@ import com.google.events.cloud.firestore.v1.Document;
 import com.google.events.cloud.firestore.v1.DocumentEventData;
 import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
-
+import com.unitvectory.firestoreproto2map.FirestoreProto2Map;
 import io.cloudevents.CloudEvent;
 import lombok.NonNull;
 
@@ -47,6 +47,8 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
 
     private final CrossFireSyncFirestore firestore;
 
+    private final FirestoreProto2Map firestoreProto2Map;
+
     /**
      * Create a new PubSubChangeConsumer.
      */
@@ -63,6 +65,7 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
         this.database = config.getDatabaseName();
         this.firestore =
                 config.getFirestoreFactory().getFirestore(ConfigFirestoreSettings.build(config));
+        this.firestoreProto2Map = new FirestoreProto2Map(this.firestore);
     }
 
     @Override
@@ -114,7 +117,7 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
                 // Perform the update
 
                 Document document = firestoreEventData.getValue();
-                Map<String, Object> record = DocumentConverter.convert(firestore, document);
+                Map<String, Object> record = this.firestoreProto2Map.convert(document);
 
                 Timestamp updatedTime = Timestamp.fromProto(document.getUpdateTime());
 
