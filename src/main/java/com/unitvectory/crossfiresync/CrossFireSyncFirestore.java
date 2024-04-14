@@ -47,11 +47,8 @@ public interface CrossFireSyncFirestore extends ValueToDocumentReferenceMapper {
      * @param documentReference The document reference
      * @param updates The updates to apply
      * @return True if the document was flagged for deletion
-     * @throws InterruptedException If the transaction is interrupted
-     * @throws ExecutionException If the transaction fails
      */
-    boolean deleteFlagTransaction(DocumentReference documentReference, Map<String, Object> updates)
-            throws InterruptedException, ExecutionException;
+    boolean deleteFlagTransaction(DocumentReference documentReference, Map<String, Object> updates);
 
     /**
      * Update a Firestore document with a transaction.
@@ -59,11 +56,9 @@ public interface CrossFireSyncFirestore extends ValueToDocumentReferenceMapper {
      * @param documentReference The document reference
      * @param updatedTime The updated time
      * @param record The record to update
-     * @throws InterruptedException If the transaction is interrupted
-     * @throws ExecutionException If the transaction fails
      */
     void updateTransaction(DocumentReference documentReference, Timestamp updatedTime,
-            Map<String, Object> record) throws InterruptedException, ExecutionException;
+            Map<String, Object> record);
 
     /**
      * Deletes the document

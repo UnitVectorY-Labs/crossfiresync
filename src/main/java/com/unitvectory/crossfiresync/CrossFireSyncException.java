@@ -14,17 +14,37 @@
 package com.unitvectory.crossfiresync;
 
 /**
- * The factory for the Firestore configuration.
+ * The CrossFireSyncException class.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
-public interface ConfigFirestoreFactory {
+public class CrossFireSyncException extends RuntimeException {
 
     /**
-     * Gets the Firestore configuration.
+     * Creates a new CrossFireSyncException.
      * 
-     * @param settings the Firestore
-     * @return the Firestore implementation
+     * @param message the message
      */
-    CrossFireSyncFirestore getFirestore(ConfigFirestoreSettings settings);
+    public CrossFireSyncException(String message) {
+        super(message);
+    }
+
+    /**
+     * Creates a new CrossFireSyncException.
+     * 
+     * @param message the message
+     * @param cause the cause
+     */
+    public CrossFireSyncException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    /**
+     * Creates a new CrossFireSyncException.
+     * 
+     * @param cause the cause
+     */
+    public CrossFireSyncException(Throwable cause) {
+        super(cause);
+    }
 }

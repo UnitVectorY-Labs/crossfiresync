@@ -52,14 +52,11 @@ class DocumentResourceNameUtil {
         // Create a new Matcher from the static Pattern for each call; Matcher is not
         // thread-safe
         Matcher matcher = DOCUMENT_PATH_PATTERN.matcher(resourceName);
-
         if (matcher.find()) {
-            // Return the captured group which is the document path
             return matcher.group(1);
+        } else {
+            return null;
         }
-
-        // No match found, return null or throw an exception
-        return null;
     }
 
     /**
@@ -74,13 +71,10 @@ class DocumentResourceNameUtil {
      */
     public static String getDatabaseId(String resourceName) {
         Matcher matcher = DATABASE_ID_PATTERN.matcher(resourceName);
-
         if (matcher.find()) {
-            // Return the captured group which is the database id
             return matcher.group(2);
+        } else {
+            return null;
         }
-
-        // No database id found, return null or throw an exception
-        return null;
     }
 }

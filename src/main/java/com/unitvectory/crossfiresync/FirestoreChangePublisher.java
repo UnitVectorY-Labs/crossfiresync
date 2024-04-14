@@ -48,10 +48,18 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
 
     private final CrossFireSyncPublish publisher;
 
+    /**
+     * Create a new FirestoreChangePublisher.
+     */
     public FirestoreChangePublisher() {
         this(FirestoreChangeConfig.builder().build());
     }
 
+    /**
+     * Create a new FirestoreChangePublisher.
+     * 
+     * @param config the configuration
+     */
     public FirestoreChangePublisher(@NonNull FirestoreChangeConfig config) {
         this.database = config.getDatabaseName();
 

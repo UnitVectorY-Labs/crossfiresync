@@ -27,7 +27,6 @@ import lombok.NonNull;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 /**
@@ -112,48 +111,44 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
         }
 
         DocumentReference documentReference = this.firestore.getDocument(documentPath);
-        try {
-            if (firestoreEventData.hasValue()) {
-                // Perform the update
+        if (firestoreEventData.hasValue()) {
+            // Perform the update
 
-                Document document = firestoreEventData.getValue();
-                Map<String, Object> record = this.firestoreProto2Map.convert(document);
+            Document document = firestoreEventData.getValue();
+            Map<String, Object> record = this.firestoreProto2Map.convert(document);
 
-                Timestamp updatedTime = Timestamp.fromProto(document.getUpdateTime());
+            Timestamp updatedTime = Timestamp.fromProto(document.getUpdateTime());
 
-                // For cross region replication to work properly two additional attributes must
-                // be written to the document to indicate what region the replicated attribute
-                // came from and the timestamp of when the record was updated
-                record.put(CrossFireSyncAttributes.TIMESTAMP_FIELD, updatedTime);
-                record.put(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, pubsubDatabase);
+            // For cross region replication to work properly two additional attributes must
+            // be written to the document to indicate what region the replicated attribute
+            // came from and the timestamp of when the record was updated
+            record.put(CrossFireSyncAttributes.TIMESTAMP_FIELD, updatedTime);
+            record.put(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, pubsubDatabase);
 
-                // Perform the update
-                this.firestore.updateTransaction(documentReference, updatedTime, record);
+            // Perform the update
+            this.firestore.updateTransaction(documentReference, updatedTime, record);
 
-                // documentReference.set().get();
-                logger.info("Document set: " + documentPath);
-            } else {
-                // Flag as delete
+            // documentReference.set().get();
+            logger.info("Document set: " + documentPath);
+        } else {
+            // Flag as delete
 
-                // TODO: This should be the timestamp of the delete not the current time
-                Timestamp deleteTimestamp = this.firestore.now();
+            // NOTE: Ideally this should be the timestamp of the delete not the current time, but
+            // the protocol buffer for deletes do not have the delete timestamp
+            Timestamp deleteTimestamp = this.firestore.now();
 
-                // Prepare the updates, set the deleted flag instead of actually deleting so the
-                // delete in the remote regions will not redundantly cascade to other regions.
-                Map<String, Object> updates = new HashMap<>();
-                updates.put(CrossFireSyncAttributes.TIMESTAMP_FIELD, deleteTimestamp);
-                updates.put(CrossFireSyncAttributes.DELETE_FIELD, true);
-                updates.put(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, pubsubDatabase);
+            // Prepare the updates, set the deleted flag instead of actually deleting so the
+            // delete in the remote regions will not redundantly cascade to other regions.
+            Map<String, Object> updates = new HashMap<>();
+            updates.put(CrossFireSyncAttributes.TIMESTAMP_FIELD, deleteTimestamp);
+            updates.put(CrossFireSyncAttributes.DELETE_FIELD, true);
+            updates.put(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, pubsubDatabase);
 
-                boolean flagged = this.firestore.deleteFlagTransaction(documentReference, updates);
+            boolean flagged = this.firestore.deleteFlagTransaction(documentReference, updates);
 
-                if (flagged) {
-                    logger.info("Document deleted: " + documentPath);
-                }
+            if (flagged) {
+                logger.info("Document deleted: " + documentPath);
             }
-        } catch (InterruptedException | ExecutionException e) {
-            // TODO: Handle exceptions better
-            logger.severe("Failed: " + e.getMessage());
         }
 
         logger.info("Pub/Sub message: " + event);

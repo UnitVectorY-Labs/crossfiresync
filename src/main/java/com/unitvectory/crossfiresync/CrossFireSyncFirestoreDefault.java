@@ -39,7 +39,12 @@ public class CrossFireSyncFirestoreDefault implements CrossFireSyncFirestore {
 
     @Override
     public DocumentReference getDocument(String documentPath) {
-        return this.db.document(documentPath);
+        try {
+            return this.db.document(documentPath);
+        } catch (Exception e) {
+            logger.severe("Failed to get document: " + documentPath);
+            throw new CrossFireSyncException("Failed to get document.", e);
+        }
     }
 
     @Override
@@ -49,7 +54,7 @@ public class CrossFireSyncFirestoreDefault implements CrossFireSyncFirestore {
 
     @Override
     public void updateTransaction(DocumentReference documentReference, Timestamp updatedTime,
-            Map<String, Object> record) throws InterruptedException, ExecutionException {
+            Map<String, Object> record) {
         ApiFuture<Void> transaction = db.runTransaction((Transaction.Function<Void>) t -> {
             // Attempt to retrieve the existing document
             DocumentSnapshot snapshot = t.get(documentReference).get();
@@ -78,12 +83,17 @@ public class CrossFireSyncFirestoreDefault implements CrossFireSyncFirestore {
         });
 
         // Wait for the transaction to complete
-        transaction.get();
+        try {
+            transaction.get();
+        } catch (Exception e) {
+            logger.severe("Failed to update transaction: " + documentReference.getPath());
+            throw new CrossFireSyncException("Failed to update transaction.", e);
+        }
     }
 
     @Override
     public boolean deleteFlagTransaction(DocumentReference documentReference,
-            Map<String, Object> updates) throws InterruptedException, ExecutionException {
+            Map<String, Object> updates) {
         ApiFuture<Boolean> transaction = db.runTransaction((Transaction.Function<Boolean>) t -> {
             // Attempt to retrieve the existing document
             DocumentSnapshot snapshot = t.get(documentReference).get();
@@ -98,7 +108,12 @@ public class CrossFireSyncFirestoreDefault implements CrossFireSyncFirestore {
         });
 
         // Wait for the transaction to complete
-        return transaction.get();
+        try {
+            return transaction.get();
+        } catch (Exception e) {
+            logger.severe("Failed to delete flag transaction: " + documentReference.getPath());
+            throw new CrossFireSyncException("Failed to delete flag transaction.", e);
+        }
     }
 
     @Override
@@ -109,8 +124,8 @@ public class CrossFireSyncFirestoreDefault implements CrossFireSyncFirestore {
             logger.info("Deleted: "
                     + DocumentResourceNameUtil.getDocumentPath(documentReference.getId()));
         } catch (InterruptedException | ExecutionException e) {
-            // TODO: Handle exceptions better
-            logger.severe("Failed: " + e.getMessage());
+            logger.severe("Failed to delete document: " + documentPath);
+            throw new CrossFireSyncException("Failed to delete document.", e);
         }
     }
 }

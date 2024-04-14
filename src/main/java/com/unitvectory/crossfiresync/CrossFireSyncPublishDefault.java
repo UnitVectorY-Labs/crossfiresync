@@ -45,11 +45,11 @@ class CrossFireSyncPublishDefault implements CrossFireSyncPublish {
             String messageId = future.get();
 
             // Wait on the future to ensure message is sent
-            logger.fine("Published message ID: " + messageId);
+            logger.fine("Published " + message.getOrderingKey() + " with message ID: " + messageId);
             return messageId;
         } catch (Exception e) {
-            logger.severe("Failed to publish to Pub/Sub: " + e.getMessage());
-            throw new RuntimeException(e);
+            logger.severe("Failed to publish message: " + message.getOrderingKey());
+            throw new CrossFireSyncException("Failed to publish message.", e);
         }
     }
 }
