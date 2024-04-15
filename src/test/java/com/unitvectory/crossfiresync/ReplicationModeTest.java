@@ -34,14 +34,14 @@ public class ReplicationModeTest {
     }
 
     @Test
-    public void singleRegionMasterTest() {
-        assertEquals(ReplicationMode.SINGLE_REGION_MASTER,
-                ReplicationMode.parseDefaultNone("SINGLE_REGION_MASTER"));
+    public void singleRegionPrimaryTest() {
+        assertEquals(ReplicationMode.SINGLE_REGION_PRIMARY,
+                ReplicationMode.parseDefaultNone("SINGLE_REGION_PRIMARY"));
     }
 
     @Test
-    public void multiRegionMasterTest() {
-        assertEquals(ReplicationMode.MULTI_REGION_MASTER,
-                ReplicationMode.parseDefaultNone("MULTI_REGION_MASTER"));
+    public void multiRegionPrimaryTest() {
+        assertEquals(ReplicationMode.MULTI_REGION_PRIMARY,
+                ReplicationMode.parseDefaultNone("MULTI_REGION_PRIMARY"));
     }
 }

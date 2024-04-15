@@ -26,9 +26,9 @@ import lombok.NonNull;
 
 import com.google.protobuf.ByteString;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -42,11 +42,15 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
 
     private static final Logger logger = Logger.getLogger(FirestoreChangePublisher.class.getName());
 
+    private final ReplicationMode replicationMode;
+
     private final String database;
 
     private final CrossFireSyncFirestore firestore;
 
     private final CrossFireSyncPublish publisher;
+
+    private final boolean configured;
 
     /**
      * Create a new FirestoreChangePublisher.
@@ -61,22 +65,70 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
      * @param config the configuration
      */
     public FirestoreChangePublisher(@NonNull FirestoreChangeConfig config) {
+        this.replicationMode = config.getReplicationMode();
         this.database = config.getDatabaseName();
 
-        this.firestore =
-                config.getFirestoreFactory().getFirestore(ConfigFirestoreSettings.build(config));
+        CrossFireSyncFirestore crossFireSyncFirestore = null;
+        CrossFireSyncPublish crossFireSyncPublish = null;
 
         try {
-            this.publisher = config.getPublisherFactory()
-                    .getPublisher(ConfigPublisherSettings.build(config));
-        } catch (IOException e) {
-            logger.severe("Failed to create Publisher: " + e.getMessage());
-            throw new RuntimeException(e);
+            crossFireSyncFirestore = config.getFirestoreFactory()
+                    .getFirestore(ConfigFirestoreSettings.build(config));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to load CrossFireSyncFirestore.", e);
+            crossFireSyncFirestore = null;
         }
+
+        try {
+            crossFireSyncPublish = config.getPublisherFactory()
+                    .getPublisher(ConfigPublisherSettings.build(config));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to load CrossFireSyncPublish.", e);
+            crossFireSyncPublish = null;
+        }
+
+        this.firestore = crossFireSyncFirestore;
+        this.publisher = crossFireSyncPublish;
+
+        this.configured = isConfigured();
+    }
+
+    private boolean isConfigured() {
+        boolean valid = true;
+
+        if (this.database == null || this.database.isBlank()) {
+            logger.severe("Database name is not set.");
+            valid = false;
+        }
+
+        if (ReplicationMode.NONE.equals(this.replicationMode)) {
+            // Replication mode must be set to be used
+            logger.severe("ReplicationMode is not properly set.");
+            valid = false;
+        }
+
+        if (this.firestore == null) {
+            logger.severe("CrossFireSyncFirestore is not set.");
+            valid = false;
+        }
+
+        if (this.publisher == null) {
+            logger.severe("CrossFireSyncPublish is not set.");
+            valid = false;
+        }
+
+        return valid;
     }
 
     @Override
     public void accept(CloudEvent event) throws InvalidProtocolBufferException {
+
+        // Check if the consumer is configured properly
+        if (!this.configured) {
+            logger.severe(
+                    "Not configured, document will not be replicated and databases will be out of sync.");
+            return;
+        }
 
         // Parse the Firestore data
         DocumentEventData firestoreEventData =
@@ -111,8 +163,9 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
         }
 
         // Check to see if this is a delete
-        if (firestoreEventData.hasValue() && firestoreEventData.getValue()
-                .containsFields(CrossFireSyncAttributes.DELETE_FIELD)) {
+        if (ReplicationMode.MULTI_REGION_PRIMARY.equals(this.replicationMode)
+                && firestoreEventData.hasValue() && firestoreEventData.getValue()
+                        .containsFields(CrossFireSyncAttributes.DELETE_FIELD)) {
             // The delete field being present is the signal to delete the record in the
             // local region without publishing to the PubSub topic.
             this.firestore.deleteDocument(documentPath);
@@ -146,6 +199,12 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
      */
     boolean shouldReplicate(DocumentEventData firestoreEventData) {
 
+        // In single region mode, we always replicate
+        if (ReplicationMode.SINGLE_REGION_PRIMARY.equals(this.replicationMode)) {
+            return true;
+        }
+
+        // Multi region mode is more complex
         if (firestoreEventData.hasValue()) {
             if (!firestoreEventData.hasOldValue()) {
                 // Insert

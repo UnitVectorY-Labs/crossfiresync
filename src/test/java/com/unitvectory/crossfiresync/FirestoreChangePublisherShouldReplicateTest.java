@@ -51,7 +51,8 @@ public class FirestoreChangePublisherShouldReplicateTest extends JsonNodeParamUn
         Firestore db = Mockito.mock(Firestore.class);
         this.firestore = new CrossFireSyncFirestoreDefault(db);
         this.firestoreChangePublisher = new FirestoreChangePublisher(FirestoreChangeConfig.builder()
-                .databaseName(databaseName).firestoreFactory(new ConfigFirestoreFactory() {
+                .replicationMode(ReplicationMode.MULTI_REGION_PRIMARY).databaseName(databaseName)
+                .firestoreFactory(new ConfigFirestoreFactory() {
                     @Override
                     public CrossFireSyncFirestore getFirestore(ConfigFirestoreSettings settings) {
                         return firestore;

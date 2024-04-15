@@ -66,6 +66,10 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
     protected JsonNode process(JsonNode input, String context) {
 
         try {
+
+            ReplicationMode replicationMode =
+                    ReplicationMode.valueOf(input.get("replicationMode").asText());
+
             Publisher publisher = Mockito.mock(Publisher.class);
 
             CrossFireSyncPublish publish = spy(new CrossFireSyncPublishDefault(publisher));
@@ -97,8 +101,8 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
                 }
             });
 
-            FirestoreChangePublisher firestoreChangePublisher =
-                    spy(new FirestoreChangePublisher(FirestoreChangeConfig.builder()
+            FirestoreChangePublisher firestoreChangePublisher = spy(new FirestoreChangePublisher(
+                    FirestoreChangeConfig.builder().replicationMode(replicationMode)
                             .databaseName(context).firestoreFactory(new ConfigFirestoreFactory() {
                                 @Override
                                 public CrossFireSyncFirestoreDefault getFirestore(
@@ -120,7 +124,7 @@ public class FirestoreChangePublisherTest extends JsonNodeParamUnit {
 
             doNothing().when(firestore).deleteDocument(deleteDocumentCaptor.capture());
 
-            byte[] inputBytes = Base64.getDecoder().decode(input.asText());
+            byte[] inputBytes = Base64.getDecoder().decode(input.get("protobuf").asText());
 
             CloudEvent cloudEvent = Mockito.mock(CloudEvent.class);
             CloudEventData cloudEventData = Mockito.mock(CloudEventData.class);

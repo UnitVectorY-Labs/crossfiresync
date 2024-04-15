@@ -66,6 +66,9 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
     protected JsonNode process(JsonNode input, String context) {
         try {
 
+            ReplicationMode replicationMode =
+                    ReplicationMode.valueOf(input.get("replicationMode").asText());
+
             CrossFireSyncFirestore firestore = Mockito.mock(CrossFireSyncFirestore.class);
 
             // Needing to capture the update argment to use as part of the test case output
@@ -127,6 +130,7 @@ public class PubSubChangeConsumerTest extends JsonNodeParamUnit {
 
             PubSubChangeConsumer pubSubChangeConsumer =
                     spy(new PubSubChangeConsumer(PubSubChangeConfig.builder().databaseName(context)
+                            .replicationMode(replicationMode)
                             .firestoreFactory(new ConfigFirestoreFactory() {
                                 @Override
                                 public CrossFireSyncFirestore getFirestore(

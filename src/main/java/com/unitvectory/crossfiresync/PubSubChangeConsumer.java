@@ -27,6 +27,7 @@ import lombok.NonNull;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -42,11 +43,15 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
 
     private static final Gson gson = new Gson();
 
+    private final ReplicationMode replicationMode;
+
     private final String database;
 
     private final CrossFireSyncFirestore firestore;
 
     private final FirestoreProto2Map firestoreProto2Map;
+
+    private final boolean configured;
 
     /**
      * Create a new PubSubChangeConsumer.
@@ -61,14 +66,62 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
      * @param config The configuration for the consumer
      */
     public PubSubChangeConsumer(@NonNull PubSubChangeConfig config) {
+        this.replicationMode = config.getReplicationMode();
         this.database = config.getDatabaseName();
-        this.firestore =
-                config.getFirestoreFactory().getFirestore(ConfigFirestoreSettings.build(config));
+
+        CrossFireSyncFirestore crossFireSyncFirestore = null;
+        try {
+            crossFireSyncFirestore = config.getFirestoreFactory()
+                    .getFirestore(ConfigFirestoreSettings.build(config));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to load CrossFireSyncFirestore.", e);
+            crossFireSyncFirestore = null;
+        }
+
+        this.firestore = crossFireSyncFirestore;
         this.firestoreProto2Map = new FirestoreProto2Map(this.firestore);
+
+        this.configured = isConfigured();
+    }
+
+    /**
+     * Checks that everything is configured properly.
+     * 
+     * @return true if configured properly; otherwise false
+     */
+    private boolean isConfigured() {
+        boolean valid = true;
+
+        if (this.database == null || this.database.isBlank()) {
+            // Database must be set to be used
+            logger.severe("database is not set.");
+            valid = false;
+        }
+
+        if (ReplicationMode.NONE.equals(this.replicationMode)) {
+            // Replication mode must be set to be used
+            logger.severe("ReplicationMode is not properly set.");
+            valid = false;
+        }
+
+        if (this.firestore == null) {
+            // Firestore must be set to be used
+            logger.severe("CrossFireSyncFirestore could not be loaded.");
+            valid = false;
+        }
+
+        return valid;
     }
 
     @Override
     public void accept(CloudEvent event) throws InvalidProtocolBufferException {
+
+        // Check if the consumer is configured properly
+        if (!this.configured) {
+            logger.severe(
+                    "Not configured, document will not be replicated and databases will be out of sync.");
+            return;
+        }
 
         // Parse the payload
         String cloudEventData = new String(event.getData().toBytes());
@@ -121,32 +174,38 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
 
             // For cross region replication to work properly two additional attributes must
             // be written to the document to indicate what region the replicated attribute
-            // came from and the timestamp of when the record was updated
-            record.put(CrossFireSyncAttributes.TIMESTAMP_FIELD, updatedTime);
-            record.put(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, pubsubDatabase);
+            // came from and the timestamp of when the record was updated. This applies only to
+            // multi region primary mode
+            if (ReplicationMode.MULTI_REGION_PRIMARY.equals(this.replicationMode)) {
+                record.put(CrossFireSyncAttributes.TIMESTAMP_FIELD, updatedTime);
+                record.put(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, pubsubDatabase);
+            }
 
             // Perform the update
             this.firestore.updateTransaction(documentReference, updatedTime, record);
-
-            // documentReference.set().get();
             logger.info("Document set: " + documentPath);
         } else {
             // Flag as delete
+            if (ReplicationMode.MULTI_REGION_PRIMARY.equals(this.replicationMode)) {
+                // Prepare the updates, set the deleted flag instead of actually deleting so the
+                // delete in the remote regions will not redundantly cascade to other regions.
+                Map<String, Object> updates = new HashMap<>();
+                updates.put(CrossFireSyncAttributes.DELETE_FIELD, true);
+                updates.put(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, pubsubDatabase);
 
-            // NOTE: Ideally this should be the timestamp of the delete not the current time, but
-            // the protocol buffer for deletes do not have the delete timestamp
-            Timestamp deleteTimestamp = this.firestore.now();
+                // NOTE: Ideally this should be the timestamp of the delete not the current time,
+                // but the protocol buffer for deletes do not have the delete timestamp
+                Timestamp deleteTimestamp = this.firestore.now();
+                updates.put(CrossFireSyncAttributes.TIMESTAMP_FIELD, deleteTimestamp);
 
-            // Prepare the updates, set the deleted flag instead of actually deleting so the
-            // delete in the remote regions will not redundantly cascade to other regions.
-            Map<String, Object> updates = new HashMap<>();
-            updates.put(CrossFireSyncAttributes.TIMESTAMP_FIELD, deleteTimestamp);
-            updates.put(CrossFireSyncAttributes.DELETE_FIELD, true);
-            updates.put(CrossFireSyncAttributes.SOURCE_DATABASE_FIELD, pubsubDatabase);
+                boolean flagged = this.firestore.deleteFlagTransaction(documentReference, updates);
 
-            boolean flagged = this.firestore.deleteFlagTransaction(documentReference, updates);
-
-            if (flagged) {
+                if (flagged) {
+                    logger.info("Flagged document as deleted: " + documentPath);
+                }
+            } else {
+                // Delete the document in the remote region
+                this.firestore.deleteDocument(documentPath);
                 logger.info("Document deleted: " + documentPath);
             }
         }

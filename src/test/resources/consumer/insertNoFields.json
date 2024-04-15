@@ -6,7 +6,8 @@
             "attributes": {
                 "database": "west"
             }
-        }
+        },
+        "replicationMode": "MULTI_REGION_PRIMARY"
     },
     "context": "east4",
     "output": {

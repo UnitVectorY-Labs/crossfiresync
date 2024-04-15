@@ -14,7 +14,6 @@
 package com.unitvectory.crossfiresync;
 
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentReference;
 import com.unitvectory.firestoreproto2map.ValueToDocumentReferenceMapper;

@@ -26,16 +26,16 @@ public enum ReplicationMode {
     NONE,
 
     /**
-     * All writes must go to the master region and changes are replicated to other regions.
+     * All writes must go to the primary region and changes are replicated to other regions.
      */
-    SINGLE_REGION_MASTER,
+    SINGLE_REGION_PRIMARY,
 
     /**
      * Writes can go to any region and changes are replicated to other regions.
      * 
      * However, additional attributes must be added to the document for bookkeeping.
      */
-    MULTI_REGION_MASTER,
+    MULTI_REGION_PRIMARY,
 
     ;
 
