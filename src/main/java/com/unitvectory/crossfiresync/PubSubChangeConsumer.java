@@ -37,6 +37,8 @@ import java.util.logging.Logger;
  * This class is responsible for consuming Pub/Sub messages from Firestore and writing those change
  * to Firestore.
  * 
+ * This class is designed to be used as a Google Cloud Function.
+ * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
 @SuppressWarnings("null")
