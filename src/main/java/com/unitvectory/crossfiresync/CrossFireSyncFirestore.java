@@ -66,6 +66,7 @@ public interface CrossFireSyncFirestore extends ValueToDocumentReferenceMapper {
      */
     void deleteDocument(String documentPath);
 
+    @Override
     default DocumentReference convert(String referenceValue, String documentPath) {
         return getDocument(documentPath);
     }

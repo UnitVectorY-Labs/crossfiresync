@@ -24,27 +24,9 @@ public class CrossFireSyncException extends RuntimeException {
      * Creates a new CrossFireSyncException.
      * 
      * @param message the message
-     */
-    public CrossFireSyncException(String message) {
-        super(message);
-    }
-
-    /**
-     * Creates a new CrossFireSyncException.
-     * 
-     * @param message the message
      * @param cause the cause
      */
     public CrossFireSyncException(String message, Throwable cause) {
         super(message, cause);
-    }
-
-    /**
-     * Creates a new CrossFireSyncException.
-     * 
-     * @param cause the cause
-     */
-    public CrossFireSyncException(Throwable cause) {
-        super(cause);
     }
 }
