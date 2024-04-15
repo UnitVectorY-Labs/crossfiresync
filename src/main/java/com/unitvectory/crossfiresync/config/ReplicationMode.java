@@ -11,17 +11,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.unitvectory.crossfiresync;
+package com.unitvectory.crossfiresync.config;
 
 /**
- * The replication mode.
+ * The ReplicationMode is used to specify how replication should be performed between regions.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
 public enum ReplicationMode {
 
     /**
-     * No replication is performed.
+     * No replication is performed, indicates application is not configured.
      */
     NONE,
 
@@ -45,7 +45,7 @@ public enum ReplicationMode {
      * @param value the value
      * @return the ReplicationMode
      */
-    public static ReplicationMode parseDefaultNone(String value) {
+    public static ReplicationMode parseFallbackToNone(String value) {
         if (value == null) {
             return NONE;
         }

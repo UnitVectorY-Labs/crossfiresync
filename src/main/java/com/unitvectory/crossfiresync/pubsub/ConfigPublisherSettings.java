@@ -11,8 +11,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.unitvectory.crossfiresync;
+package com.unitvectory.crossfiresync.pubsub;
 
+import com.unitvectory.crossfiresync.FirestoreChangeConfig;
 import lombok.Builder;
 import lombok.Value;
 
@@ -41,7 +42,7 @@ public class ConfigPublisherSettings {
      * @param config the Firestore change configuration
      * @return the publisher settings
      */
-    static ConfigPublisherSettings build(FirestoreChangeConfig config) {
+    public static ConfigPublisherSettings build(FirestoreChangeConfig config) {
         return ConfigPublisherSettings.builder().project(config.getProject())
                 .topic(config.getTopic()).build();
     }

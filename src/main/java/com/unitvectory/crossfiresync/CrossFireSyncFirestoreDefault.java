@@ -22,6 +22,8 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Transaction;
+import com.unitvectory.crossfiresync.exception.CrossFireSyncException;
+import com.unitvectory.crossfiresync.firestore.CrossFireSyncFirestore;
 import lombok.AllArgsConstructor;
 
 /**
@@ -30,7 +32,7 @@ import lombok.AllArgsConstructor;
  * @author Jared Hatfield (UnitVectorY Labs)
  */
 @AllArgsConstructor
-public class CrossFireSyncFirestoreDefault implements CrossFireSyncFirestore {
+class CrossFireSyncFirestoreDefault implements CrossFireSyncFirestore {
 
     private static final Logger logger =
             Logger.getLogger(CrossFireSyncFirestoreDefault.class.getName());

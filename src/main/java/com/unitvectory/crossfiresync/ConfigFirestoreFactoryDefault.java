@@ -14,6 +14,9 @@
 package com.unitvectory.crossfiresync;
 
 import com.google.cloud.firestore.FirestoreOptions;
+import com.unitvectory.crossfiresync.firestore.ConfigFirestoreFactory;
+import com.unitvectory.crossfiresync.firestore.ConfigFirestoreSettings;
+import com.unitvectory.crossfiresync.firestore.CrossFireSyncFirestore;
 
 /**
  * The factory for the Firestore configuration.

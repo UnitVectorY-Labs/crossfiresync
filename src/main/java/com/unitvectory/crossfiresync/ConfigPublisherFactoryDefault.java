@@ -16,6 +16,9 @@ package com.unitvectory.crossfiresync;
 import java.io.IOException;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.pubsub.v1.ProjectTopicName;
+import com.unitvectory.crossfiresync.pubsub.ConfigPublisherFactory;
+import com.unitvectory.crossfiresync.pubsub.ConfigPublisherSettings;
+import com.unitvectory.crossfiresync.pubsub.CrossFireSyncPublish;
 
 /**
  * The default factory for the Publisher configuration.

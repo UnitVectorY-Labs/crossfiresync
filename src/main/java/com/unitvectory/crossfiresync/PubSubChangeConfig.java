@@ -13,6 +13,8 @@
  */
 package com.unitvectory.crossfiresync;
 
+import com.unitvectory.crossfiresync.config.ReplicationMode;
+import com.unitvectory.crossfiresync.firestore.ConfigFirestoreFactory;
 import lombok.Builder;
 import lombok.Value;
 
@@ -30,7 +32,7 @@ public class PubSubChangeConfig {
      */
     @Builder.Default
     private final ReplicationMode replicationMode =
-            ReplicationMode.parseDefaultNone(System.getenv("REPLICATION_MODE"));
+            ReplicationMode.parseFallbackToNone(System.getenv("REPLICATION_MODE"));
 
     /**
      * The Firestore database name

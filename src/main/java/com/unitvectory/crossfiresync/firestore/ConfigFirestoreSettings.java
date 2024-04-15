@@ -11,8 +11,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.unitvectory.crossfiresync;
+package com.unitvectory.crossfiresync.firestore;
 
+import com.unitvectory.crossfiresync.FirestoreChangeConfig;
+import com.unitvectory.crossfiresync.PubSubChangeConfig;
 import lombok.Builder;
 import lombok.Value;
 
@@ -36,7 +38,7 @@ public class ConfigFirestoreSettings {
      * @param config the Firestore change configuration
      * @return the Firestore settings
      */
-    static ConfigFirestoreSettings build(FirestoreChangeConfig config) {
+    public static ConfigFirestoreSettings build(FirestoreChangeConfig config) {
         return ConfigFirestoreSettings.builder().databaseName(config.getDatabaseName()).build();
     }
 
@@ -46,7 +48,7 @@ public class ConfigFirestoreSettings {
      * @param config the PubSub change configuration
      * @return the Firestore settings
      */
-    static ConfigFirestoreSettings build(PubSubChangeConfig config) {
+    public static ConfigFirestoreSettings build(PubSubChangeConfig config) {
         return ConfigFirestoreSettings.builder().databaseName(config.getDatabaseName()).build();
     }
 }

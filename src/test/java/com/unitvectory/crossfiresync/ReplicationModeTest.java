@@ -15,6 +15,7 @@ package com.unitvectory.crossfiresync;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
+import com.unitvectory.crossfiresync.config.ReplicationMode;
 
 /**
  * The ReplicationMode test class.
@@ -25,23 +26,23 @@ public class ReplicationModeTest {
 
     @Test
     public void nullTest() {
-        assertEquals(ReplicationMode.NONE, ReplicationMode.parseDefaultNone(null));
+        assertEquals(ReplicationMode.NONE, ReplicationMode.parseFallbackToNone(null));
     }
 
     @Test
     public void invalidTest() {
-        assertEquals(ReplicationMode.NONE, ReplicationMode.parseDefaultNone("invalid"));
+        assertEquals(ReplicationMode.NONE, ReplicationMode.parseFallbackToNone("invalid"));
     }
 
     @Test
     public void singleRegionPrimaryTest() {
         assertEquals(ReplicationMode.SINGLE_REGION_PRIMARY,
-                ReplicationMode.parseDefaultNone("SINGLE_REGION_PRIMARY"));
+                ReplicationMode.parseFallbackToNone("SINGLE_REGION_PRIMARY"));
     }
 
     @Test
     public void multiRegionPrimaryTest() {
         assertEquals(ReplicationMode.MULTI_REGION_PRIMARY,
-                ReplicationMode.parseDefaultNone("MULTI_REGION_PRIMARY"));
+                ReplicationMode.parseFallbackToNone("MULTI_REGION_PRIMARY"));
     }
 }
