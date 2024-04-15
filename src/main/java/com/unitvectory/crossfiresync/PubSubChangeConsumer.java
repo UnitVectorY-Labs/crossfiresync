@@ -34,8 +34,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class is tasked with receiving changes from a PubSub topic and writing them to Firestore in
- * another region.
+ * This class is responsible for consuming Pub/Sub messages from Firestore and writing those change
+ * to Firestore.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */

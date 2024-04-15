@@ -37,7 +37,9 @@ import java.util.logging.Logger;
 
 /**
  * This class is responsible for consuming changes from Firestore and publishing them to a PubSub
- * topic.
+ * topic for replication to another region.
+ * 
+ * This class is designed to be used as a Google Cloud Function.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */

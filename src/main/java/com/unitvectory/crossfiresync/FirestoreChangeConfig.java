@@ -20,7 +20,16 @@ import lombok.Builder;
 import lombok.Value;
 
 /**
- * The configuration of the consumer.
+ * The configuration for FirestoreChangePublisher allows for customization.
+ * 
+ * By default, the configuration will use the following environment variables:
+ * 
+ * <ul>
+ * <li><b>REPLICATION_MODE</b>: The type of replication</li>
+ * <li><b>DATABASE</b>: The Firestore database name</li>
+ * <li><b>GOOGLE_CLOUD_PROJECT</b>: The GCP project</li>
+ * <li><b>TOPIC</b>: The PubSub topic</li>
+ * </ul>
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
@@ -30,6 +39,10 @@ public class FirestoreChangeConfig {
 
     /**
      * The type of replication
+     * 
+     * Use the REPLICATION_MODE environment variable to set this value.
+     * 
+     * @see ReplicationMode
      */
     @Builder.Default
     private final ReplicationMode replicationMode =
@@ -37,30 +50,42 @@ public class FirestoreChangeConfig {
 
     /**
      * The Firestore database name
+     * 
+     * Use the DATABASE environment variable to set this value.
      */
     @Builder.Default
     private final String databaseName = System.getenv("DATABASE");
 
     /**
      * The GCP project
+     * 
+     * Use the GOOGLE_CLOUD_PROJECT environment variable to set this value.
      */
     @Builder.Default
     private final String project = System.getenv("GOOGLE_CLOUD_PROJECT");
 
     /**
      * The PubSub topic
+     * 
+     * Use the TOPIC environment variable to set this value.
      */
     @Builder.Default
     private final String topic = System.getenv("TOPIC");
 
     /**
      * The Firestore factory
+     * 
+     * Implement the ConfigFirestoreFactory interface to create a custom factory to provide a
+     * customized Firestore instance.
      */
     @Builder.Default
     private final ConfigFirestoreFactory firestoreFactory = new ConfigFirestoreFactoryDefault();
 
     /**
      * The publisher factory
+     * 
+     * Implement the ConfigPublisherFactory interface to create a custom factory to provide a
+     * customized Publisher instance.
      */
     @Builder.Default
     private final ConfigPublisherFactory publisherFactory = new ConfigPublisherFactoryDefault();

@@ -19,7 +19,14 @@ import lombok.Builder;
 import lombok.Value;
 
 /**
- * The configuration of the publisher.
+ * The configuration for PubSubChangeConsumer allows for customization.
+ * 
+ * By default, the configuration will use the following environment variables:
+ * 
+ * <ul>
+ * <li><b>REPLICATION_MODE</b>: The type of replication</li>
+ * <li><b>DATABASE</b>: The Firestore database name</li>
+ * </ul>
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
@@ -29,6 +36,10 @@ public class PubSubChangeConfig {
 
     /**
      * The type of replication
+     * 
+     * Use the REPLICATION_MODE environment variable to set this value.
+     * 
+     * @see ReplicationMode
      */
     @Builder.Default
     private final ReplicationMode replicationMode =
@@ -36,12 +47,17 @@ public class PubSubChangeConfig {
 
     /**
      * The Firestore database name
+     * 
+     * Use the DATABASE environment variable to set this value.
      */
     @Builder.Default
     private final String databaseName = System.getenv("DATABASE");
 
     /**
      * The Firestore factory
+     * 
+     * Implement the ConfigFirestoreFactory interface to create a custom factory to provide a
+     * customized Firestore instance.
      */
     @Builder.Default
     private final ConfigFirestoreFactory firestoreFactory = new ConfigFirestoreFactoryDefault();
