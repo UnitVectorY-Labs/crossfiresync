@@ -4,6 +4,18 @@
 
 Real-time synchronization between GCP Firestore instances across regions using PubSub.
 
+## Getting Started
+
+This library requires Java 17 and is available in the Maven Central Repository:
+
+```xml
+<dependency>
+    <groupId>com.unitvectory</groupId>
+    <artifactId>crossfiresync</artifactId>
+    <version>0.0.1</version>
+</dependency>
+```
+
 ## Synchronization Mechanism
 
 To replicate the data in a Firestore collection between different regions a Cloud Function, the `FirestoreChangePublisher`, is triggered by `google.cloud.firestore.document.v1.written` so it receives all inserts, updates, and events for the documents.  These changes are written to a Pub/Sub topic.  Another Cloud Function, the `PubSubChangeConsumer` is triggered by the Pub/Sub topic.  These Cloud Functions are configured in each region that the it is desired to have the data replicate between.
