@@ -23,6 +23,10 @@ The default configuration for the application uses environment variables to set 
 - **GOOGLE_CLOUD_PROJECT**: The GCP project name
 - **TOPIC**: The PubSub topic name; must be a multi-region topic
 
+The following example applications are provided with scripts to deploy the corresponding Cloud Functions to make setting up replication easy:
+- [crossfiresync-firestore](https://github.com/UnitVectorY-Labs/crossfiresync-firestore)
+- [crossfiresync-pubsub](https://github.com/UnitVectorY-Labs/crossfiresync-pubsub)
+
 ## Synchronization Mechanism
 
 To replicate the data in a Firestore collection between different regions a Cloud Function, the `FirestoreChangePublisher`, is triggered by `google.cloud.firestore.document.v1.written` so it receives all inserts, updates, and events for the documents.  These changes are written to a Pub/Sub topic.  Another Cloud Function, the `PubSubChangeConsumer` is triggered by the Pub/Sub topic.  These Cloud Functions are configured in each region that the it is desired to have the data replicate between.
