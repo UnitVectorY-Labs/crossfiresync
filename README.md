@@ -16,9 +16,9 @@ This library requires Java 17 and is available in the Maven Central Repository:
 </dependency>
 ```
 
-The default configuration for the application uses environment variables to set the necessary configuration.  They are as follows:
+The default configuration for the application uses environment variables to set the necessary configuration. They are as follows:
 
-- **REPLICATION_MODE**: The type of replication either SINGLE_REGION_PRIMARY or MULTI_REGION_PRIMARY
+- **REPLICATION_MODE**: The type of replication either `SINGLE_REGION_PRIMARY` or `MULTI_REGION_PRIMARY`
 - **DATABASE**: The Firestore database name; must be in the matching region
 - **GOOGLE_CLOUD_PROJECT**: The GCP project name
 - **TOPIC**: The PubSub topic name; must be a multi-region topic
