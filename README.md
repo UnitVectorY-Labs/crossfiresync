@@ -16,6 +16,13 @@ This library requires Java 17 and is available in the Maven Central Repository:
 </dependency>
 ```
 
+The default configuration for the application uses environment variables to set the necessary configuration.  They are as follows:
+
+- **REPLICATION_MODE**: The type of replication either SINGLE_REGION_PRIMARY or MULTI_REGION_PRIMARY
+- **DATABASE**: The Firestore database name; must be in the matching region
+- **GOOGLE_CLOUD_PROJECT**: The GCP project name
+- **TOPIC**: The PubSub topic name; must be a multi-region topic
+
 ## Synchronization Mechanism
 
 To replicate the data in a Firestore collection between different regions a Cloud Function, the `FirestoreChangePublisher`, is triggered by `google.cloud.firestore.document.v1.written` so it receives all inserts, updates, and events for the documents.  These changes are written to a Pub/Sub topic.  Another Cloud Function, the `PubSubChangeConsumer` is triggered by the Pub/Sub topic.  These Cloud Functions are configured in each region that the it is desired to have the data replicate between.
@@ -28,6 +35,59 @@ The aspiration of this application is to allow for full read and write access to
 
 In single region primary mode all writes must be directed to the primary region.  Synchornization of all document changes can then be replicated to other regions.
 
+```mermaid
+flowchart TD
+
+    %% Subgraph for us-east1
+    subgraph us-east1
+        subgraph CloudFunctionEast["Cloud Function"]
+            crossfiresync-pubsub-east["crossfiresync\nPub/Sub"]
+        end
+        crossfiresync-pubsub-east -- "Write Changes" --> FirestoreEast[(Firestore)]
+        ClientEast[Client] -- "Read Only" --> FirestoreEast
+        PubSubEast>PubSub] -- "Subscribe" --> crossfiresync-pubsub-east
+    end
+
+    %% Subgraph for us-west1
+    subgraph us-west1
+        subgraph CloudFunctionWest["Cloud Function"]
+            crossfiresync-pubsub-west["crossfiresync\nPub/Sub"]
+        end
+        crossfiresync-pubsub-west -- "Write Changes" --> FirestoreWest[(Firestore)]
+        ClientWest[Client] -- "Read Only" --> FirestoreWest
+        PubSubWest>PubSub] -- "Subscribe" --> crossfiresync-pubsub-west
+    end
+
+    %% Subgraph for us-central1
+    subgraph us-central1
+        subgraph CloudFunctionCentral["Cloud Function"]
+            crossfiresync-firestore-central["crossfiresync\nFirestore"]
+        end
+        crossfiresync-firestore-central -- "Publish" --> PubSubCentral>PubSub]
+        ClientCentral[Client] -- "Read/Write" --> FirestoreCentral
+        FirestoreCentral[(Firestore)] -- "eventarc Changes" --> crossfiresync-firestore-central
+    end
+
+
+    ClientEast[Client] -- "Write" --> FirestoreCentral
+    ClientWest[Client] -- "Write" --> FirestoreCentral
+
+    %% Connections between PubSub nodes across regions
+    PubSubEast <-..-> PubSubWest
+    PubSubEast <-..-> PubSubCentral
+    PubSubWest <-..-> PubSubCentral
+    
+    %% Styling options
+    classDef client fill:#7D85B1,stroke:#5C677D,stroke-width:2px; %% Slate blue for clients
+    classDef firestore fill:#82C0CC,stroke:#4AA6B0,stroke-width:2px; %% Soft cyan for Firestore
+    classDef pubsub fill:#9AD9DB,stroke:#72C7CA,stroke-width:2px; %% Light teal for Pub/Sub
+    classDef function fill:#F4A261,stroke:#E76F51,stroke-width:2px; %% Warm orange for Cloud Functions
+    class ClientEast,ClientWest,ClientCentral client;
+    class FirestoreEast,FirestoreWest,FirestoreCentral firestore;
+    class PubSubEast,PubSubWest,PubSubCentral pubsub;
+    class crossfiresync-firestore-east,crossfiresync-firestore-west,crossfiresync-firestore-central,crossfiresync-pubsub-east,crossfiresync-pubsub-west,crossfiresync-pubsub-central function;
+```
+
 When using a single region primary the `FirestoreChangePublisher` function is deployed only to the primary region where all of the writes are directed and the `PubSubChangeConsumer` function is deployed to all of the regions where data is to be replicated.  It is critical that this configuration is used when in this mode to avoid replication loops.
 
 The benefit of single region primary mode is additional attributes do not need to be added to the documents.  The downside being that all writes must be directed to a single region.
@@ -37,6 +97,64 @@ The benefit of single region primary mode is additional attributes do not need t
 **Replication Mode:** `MULTI_REGION_PRIMARY`
 
 In multi region primary mode writes can be directed to any region.  Synchronization of the various documents is attempted to be kept in sync, but the guarentees provided by Firestore, Cloud Functions, and Pub/Sub working together cannot guarentee the copy of the database in each region is perfectly in sync.
+
+```mermaid
+flowchart TD
+
+    %% Subgraph for us-east1
+    subgraph us-east1
+        subgraph CloudFunctionEast["Cloud Function"]
+            crossfiresync-firestore-east["crossfiresync\nFirestore"]
+            crossfiresync-pubsub-east["crossfiresync\nPub/Sub"]
+        end
+        crossfiresync-firestore-east -- "Publish" --> PubSubEast>PubSub]
+        crossfiresync-pubsub-east -- "Write Changes" --> FirestoreEast[(Firestore)]
+        ClientEast[Client] -- "Read/Write" --> FirestoreEast
+        FirestoreEast -- "eventarc Changes" --> crossfiresync-firestore-east
+        PubSubEast -- "Subscribe" --> crossfiresync-pubsub-east
+    end
+
+    %% Subgraph for us-west1
+    subgraph us-west1
+        subgraph CloudFunctionWest["Cloud Function"]
+            crossfiresync-firestore-west["crossfiresync\nFirestore"]
+            crossfiresync-pubsub-west["crossfiresync\nPub/Sub"]
+        end
+        crossfiresync-firestore-west -- "Publish" --> PubSubWest>PubSub]
+        crossfiresync-pubsub-west -- "Write Changes" --> FirestoreWest[(Firestore)]
+        ClientWest[Client] -- "Read/Write" --> FirestoreWest
+        FirestoreWest -- "eventarc Changes" --> crossfiresync-firestore-west
+        PubSubWest -- "Subscribe" --> crossfiresync-pubsub-west
+    end
+
+    %% Subgraph for us-central1
+    subgraph us-central1
+        subgraph CloudFunctionCentral["Cloud Function"]
+            crossfiresync-firestore-central["crossfiresync\nFirestore"]
+            crossfiresync-pubsub-central["crossfiresync\nPub/Sub"]
+        end
+        crossfiresync-firestore-central -- "Publish" --> PubSubCentral>PubSub]
+        crossfiresync-pubsub-central -- "Write Changes" --> FirestoreCentral[(Firestore)]
+        ClientCentral[Client] -- "Read/Write" --> FirestoreCentral
+        FirestoreCentral -- "eventarc Changes" --> crossfiresync-firestore-central
+        PubSubCentral -- "Subscribe" --> crossfiresync-pubsub-central
+    end
+
+    %% Connections between PubSub nodes across regions
+    PubSubEast <-..-> PubSubWest
+    PubSubEast <-..-> PubSubCentral
+    PubSubWest <-..-> PubSubCentral
+    
+    %% Styling options
+    classDef client fill:#7D85B1,stroke:#5C677D,stroke-width:2px; %% Slate blue for clients
+    classDef firestore fill:#82C0CC,stroke:#4AA6B0,stroke-width:2px; %% Soft cyan for Firestore
+    classDef pubsub fill:#9AD9DB,stroke:#72C7CA,stroke-width:2px; %% Light teal for Pub/Sub
+    classDef function fill:#F4A261,stroke:#E76F51,stroke-width:2px; %% Warm orange for Cloud Functions
+    class ClientEast,ClientWest,ClientCentral client;
+    class FirestoreEast,FirestoreWest,FirestoreCentral firestore;
+    class PubSubEast,PubSubWest,PubSubCentral pubsub;
+    class crossfiresync-firestore-east,crossfiresync-firestore-west,crossfiresync-firestore-central,crossfiresync-pubsub-east,crossfiresync-pubsub-west,crossfiresync-pubsub-central function;
+```
 
 When using multi region primary the `FirestoreChangePublisher` and `PubSubChangeConsumer` are deployed to every region.  It is critical both are deployed in every region when in this mode for replication to function correctly.
 
