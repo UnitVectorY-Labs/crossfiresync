@@ -9,6 +9,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: write
+
 jobs:
   build:
 
@@ -30,4 +33,4 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         slug: UnitVectorY-Labs/crossfiresync
     - name: Submit Dependency Snapshot
-      uses: advanced-security/maven-dependency-submission-action@v3
+      uses: advanced-security/maven-dependency-submission-action@v4
