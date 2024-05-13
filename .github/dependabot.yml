@@ -9,11 +9,20 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "saturday"
+      time: "07:00"
+      timezone: "America/New_York"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "saturday"
+      time: "07:00"
+      timezone: "America/New_York"
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:
       interval: weekly
+      day: "saturday"
+      time: "07:00"
+      timezone: "America/New_York"
