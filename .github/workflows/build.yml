@@ -31,6 +31,6 @@ jobs:
       uses: codecov/codecov-action@v4.4.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        slug: UnitVectorY-Labs/crossfiresync
+        slug: ${{ github.repository }}
     - name: Submit Dependency Snapshot
       uses: advanced-security/maven-dependency-submission-action@v4
