@@ -12,7 +12,7 @@ This library requires Java 17 and is available in the Maven Central Repository:
 <dependency>
     <groupId>com.unitvectory</groupId>
     <artifactId>crossfiresync</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 
@@ -24,6 +24,7 @@ The default configuration for the application uses environment variables to set 
 - **TOPIC**: The PubSub topic name; must be a multi-region topic
 
 The following example applications are provided with scripts to deploy the corresponding Cloud Functions to make setting up replication easy:
+
 - [crossfiresync-firestore](https://github.com/UnitVectorY-Labs/crossfiresync-firestore)
 - [crossfiresync-pubsub](https://github.com/UnitVectorY-Labs/crossfiresync-pubsub)
 
