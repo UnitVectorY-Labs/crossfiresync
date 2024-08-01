@@ -129,16 +129,29 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
     @Override
     public void accept(CloudEvent event) throws InvalidProtocolBufferException {
 
+        byte[] data = event.getData().toBytes();
+
+        // Parse the Firestore data
+        DocumentEventData firestoreEventData = DocumentEventData.parseFrom(data);
+
+        // Process the request
+        process(firestoreEventData, data);
+    }
+
+    /**
+     * Process the Firestore event for replication.
+     * 
+     * @param firestoreEventData the Firestore event; parsed from the data
+     * @param data the raw data; used for PubSub message replication
+     */
+    public void process(DocumentEventData firestoreEventData, byte[] data) {
+
         // Check if the consumer is configured properly
         if (!this.configured) {
             logger.severe(
                     "Not configured, document will not be replicated and databases will be out of sync.");
             return;
         }
-
-        // Parse the Firestore data
-        DocumentEventData firestoreEventData =
-                DocumentEventData.parseFrom(event.getData().toBytes());
 
         // Get the resource name for the document for insert/update/delete
         String resourceName = null;
@@ -190,8 +203,7 @@ public class FirestoreChangePublisher implements CloudEventsFunction {
 
         // Prepare the message to be published
         PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setOrderingKey(documentPath)
-                .setData(ByteString.copyFrom(event.getData().toBytes()))
-                .putAllAttributes(attributes).build();
+                .setData(ByteString.copyFrom(data)).putAllAttributes(attributes).build();
 
         // Publish the message
         this.publisher.publishMessage(pubsubMessage);

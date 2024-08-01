@@ -118,8 +118,28 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
         return valid;
     }
 
+
     @Override
     public void accept(CloudEvent event) throws InvalidProtocolBufferException {
+
+        // Parse the PubSub payload
+        String cloudEventData = new String(event.getData().toBytes());
+        PubSubPublish data = gson.fromJson(cloudEventData, PubSubPublish.class);
+
+        // Process the Pub/Sub message
+        process(data);
+
+        // Log the event
+        logger.finest("Pub/Sub message: " + event);
+    }
+
+    /**
+     * Process the Pub/Sub message.
+     * 
+     * @param data The Pub/Sub message
+     * @throws InvalidProtocolBufferException
+     */
+    public void process(PubSubPublish data) throws InvalidProtocolBufferException {
 
         // Check if the consumer is configured properly
         if (!this.configured) {
@@ -127,10 +147,6 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
                     "Not configured, document will not be replicated and databases will be out of sync.");
             return;
         }
-
-        // Parse the payload
-        String cloudEventData = new String(event.getData().toBytes());
-        PubSubPublish data = gson.fromJson(cloudEventData, PubSubPublish.class);
 
         String pubsubDatabase = data.getMessage().getAttribute("database");
 
@@ -214,8 +230,5 @@ public class PubSubChangeConsumer implements CloudEventsFunction {
                 logger.info("Document deleted: " + documentPath);
             }
         }
-
-        logger.info("Pub/Sub message: " + event);
     }
-
 }
