@@ -11,21 +11,43 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.unitvectory.crossfiresync;
+package com.unitvectory.crossfiresync.pubsub.model;
+
+import java.util.Map;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * The PubSubPublish class.
+ * The PubSubMessage class.
  * 
  * @author Jared Hatfield (UnitVectorY Labs)
  */
 @Data
 @NoArgsConstructor
-class PubSubPublish {
+public class PubSubMessage {
 
-    private PubSubMessage message;
+    private Map<String, String> attributes;
 
-    private String subscription;
+    private String data;
+
+    private String messageId;
+
+    private String orderingKey;
+
+    private String publishTime;
+
+    /**
+     * Gets the attribute value.
+     * 
+     * @param name the attribute name
+     * @return the attribute value
+     */
+    public String getAttribute(String name) {
+        if (this.attributes == null) {
+            return null;
+        }
+
+        return this.attributes.get(name);
+    }
 }

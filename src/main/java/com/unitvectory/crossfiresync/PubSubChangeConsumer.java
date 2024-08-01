@@ -23,6 +23,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.unitvectory.crossfiresync.config.ReplicationMode;
 import com.unitvectory.crossfiresync.firestore.ConfigFirestoreSettings;
 import com.unitvectory.crossfiresync.firestore.CrossFireSyncFirestore;
+import com.unitvectory.crossfiresync.pubsub.model.PubSubPublish;
 import com.unitvectory.firestoreproto2map.FirestoreProto2Map;
 import io.cloudevents.CloudEvent;
 import lombok.NonNull;
