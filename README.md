@@ -2,7 +2,7 @@
 
 # crossfiresync
 
-Real-time synchronization between GCP Firestore instances across regions using PubSub.
+A Java library enabling real-time synchronization between GCP Firestore instances across regions using Pub/Sub.
 
 ## Getting Started
 
