@@ -4,6 +4,14 @@
 
 A Java library enabling real-time synchronization between GCP Firestore instances across regions using Pub/Sub.
 
+## References
+
+- [crossfiresync](https://github.com/UnitVectorY-Labs/crossfiresync) - A Java library enabling real-time synchronization between GCP Firestore instances across regions using Pub/Sub.
+- [crossfiresyncrun](https://github.com/UnitVectorY-Labs/crossfiresyncrun) - Provides real-time synchronization between GCP Firestore instances across regions using Pub/Sub, packaged as a Docker image for deployment on Cloud Run.
+- [crossfiresyncrun-tofu](https://github.com/UnitVectorY-Labs/crossfiresyncrun-tofu) - A module for OpenTofu that deploys crossfiresyncrun to GCP Cloud Run, along with configuring essential services including Firestore and Pub/Sub.
+- [crossfiresync-firestore](https://github.com/UnitVectorY-Labs/crossfiresync-firestore) - Reference implementation of a crossfiresync Firestore publisher, featuring Java code and deployment scripts for Cloud Functions.
+- [crossfiresync-pubsub](https://github.com/UnitVectorY-Labs/crossfiresync-pubsub) - Reference implementation of a crossfiresync Pub/Sub consumer, featuring Java code and deployment scripts for Cloud Functions.
+
 ## Getting Started
 
 This library requires Java 17 and is available in the Maven Central Repository:
