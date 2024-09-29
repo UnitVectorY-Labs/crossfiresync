@@ -1,15 +1,18 @@
-name: release and push to central
+name: Publish Java version to Maven Central
 on:
   release:
     types: [published]
 jobs:
   publish:
     permissions:
+      contents: write
       id-token: write
       attestations: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Set up Java for publishing to Maven Central Repository
         uses: actions/setup-java@v4
         with:
@@ -20,14 +23,41 @@ jobs:
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
-      - name: build artifact
+
+      - name: Extract Maven Artifacts
+        id: maven_artifact
+        run: |
+          echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
+          echo "artifactId=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)" >> $GITHUB_OUTPUT
+
+      - name: Build Java Project
         run: mvn clean package -ntp
+
       - name: Publish to the Maven Central Repository
         run: mvn deploy -ntp
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
-      - uses: actions/attest-build-provenance@v1
+
+      - name: Publish Java Artifacts to GitHub Release
+        run: |
+          cp pom.xml ${{ steps.maven_artifact.outputs.artifactId }}-${{ steps.maven_artifact.outputs.version }}.pom
+          gh release upload ${{github.event.release.tag_name}} "${{ steps.maven_artifact.outputs.artifactId }}-${{ steps.maven_artifact.outputs.version }}.pom"
+          for jar in target/*.jar; do
+            [ -e "$jar" ] || continue
+            gh release upload ${{github.event.release.tag_name}} "$jar"
+          done
+        env:
+          GITHUB_TOKEN: ${{ github.TOKEN }}
+
+      - name: GitHub Attestation for JAR files
+        uses: actions/attest-build-provenance@v1
         with:
           subject-path: "target/*.jar"
+
+      - name: GitHub Attestation for POM file
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: "pom.xml"
+          subject-name: "${{ steps.maven_artifact.outputs.artifactId }}-${{ steps.maven_artifact.outputs.version }}.pom"
