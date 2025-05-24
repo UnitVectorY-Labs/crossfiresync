@@ -36,4 +36,4 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: ${{ github.repository }}
       - name: Submit Dependency Snapshot
-        uses: advanced-security/maven-dependency-submission-action@v4
+        uses: advanced-security/maven-dependency-submission-action@v5
