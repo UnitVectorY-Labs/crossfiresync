@@ -20,7 +20,7 @@ This library requires Java 17 and is available in the Maven Central Repository:
 <dependency>
     <groupId>com.unitvectory</groupId>
     <artifactId>crossfiresync</artifactId>
-    <version>0.0.5</version>
+    <version>0.0.6</version>
 </dependency>
 ```
 
