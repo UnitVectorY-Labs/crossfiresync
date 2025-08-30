@@ -57,12 +57,12 @@ jobs:
           GITHUB_TOKEN: ${{ github.TOKEN }}
 
       - name: GitHub Attestation for JAR files
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: "target/*.jar"
 
       - name: GitHub Attestation for POM file
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: "pom.xml"
           subject-name: "${{ steps.maven_artifact.outputs.artifactId }}-${{ steps.maven_artifact.outputs.version }}.pom"
