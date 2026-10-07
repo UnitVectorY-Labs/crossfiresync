@@ -29,6 +29,21 @@ jobs:
           gpg-private-key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
+      # The Central publishing plugin 0.11.0 bundles extra repository metadata
+      # with Maven 3.10. Pin Maven instead of using the runner's installed version.
+      - name: Set up Maven 3.9.16
+        shell: bash
+        run: |
+          maven_archive="$RUNNER_TEMP/apache-maven-3.9.16-bin.tar.gz"
+          curl --fail --silent --show-error --location --output "$maven_archive" \
+            https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.16/apache-maven-3.9.16-bin.tar.gz
+          echo "831a8591fe20c8243b1dbe7d71e3244f31d1665b0804b2e825e38cbbe5ce0cafb8338851f90780735568773e0a6cd07bbec107cda0b896b008b861075358b6f6  $maven_archive" | sha512sum --check
+          tar -xzf "$maven_archive" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-3.9.16/bin" >> "$GITHUB_PATH"
+
+      - name: Show Maven version
+        run: mvn --version
+
       - name: Extract Maven Artifacts
         id: maven_artifact
         run: |
